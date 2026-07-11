@@ -673,7 +673,24 @@ analyzeContentBtn.addEventListener('click', async () => {
     appendLog('El dispositivo no está montado. Intentando montar...', 'warn');
     
     try {
-      const partitionName = selected.name.replace('/dev/', '');
+      // Usar el nombre del dispositivo seleccionado (puede ser partición o dispositivo completo)
+      let partitionName = selected.name.replace('/dev/', '');
+      
+      // Si es un dispositivo completo sin número, buscar sus particiones
+      if (!partitionName.match(/\d+$/)) {
+        appendLog(`Buscando particiones para ${partitionName}...`, 'warn');
+        const devices = await window.usbAPI.listDevices();
+        if (devices.success) {
+          const partitions = devices.devices.filter(d => 
+            d.name.startsWith(selected.name) && d.name !== selected.name
+          );
+          if (partitions.length > 0) {
+            partitionName = partitions[0].name.replace('/dev/', '');
+            appendLog(`Usando partición: ${partitionName}`, 'ok');
+          }
+        }
+      }
+      
       const mountResult = await window.usbAPI.mountDevice(partitionName);
       
       if (mountResult.success) {
@@ -688,6 +705,13 @@ analyzeContentBtn.addEventListener('click', async () => {
           if (updatedDevice && updatedDevice.mountpoint) {
             mountpoint = updatedDevice.mountpoint;
             selected = updatedDevice;
+          } else {
+            // Si no se encuentra el dispositivo original, buscar la partición montada
+            const mountedPartition = devices.devices.find(d => d.mountpoint && d.mountpoint !== 'no montado');
+            if (mountedPartition) {
+              mountpoint = mountedPartition.mountpoint;
+              selected = mountedPartition;
+            }
           }
         }
       } else {
