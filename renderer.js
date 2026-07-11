@@ -125,7 +125,7 @@ function getSelectedFsType() {
   return selected.fstype;
 }
 
-async function loadDevices() {
+async function loadDevices(forceRefresh = false) {
   setStatus('Cargando dispositivos...');
   deviceSelect.innerHTML = '<option value="">Cargando...</option>';
   deviceInfo.textContent = 'Ningún dispositivo detectado';
@@ -139,26 +139,28 @@ async function loadDevices() {
     const newDevices = result.devices || [];
     const currentCount = newDevices.length;
     
-    // Detectar cambios en la cantidad de dispositivos
-    if (currentCount !== lastDeviceCount) {
-      lastDeviceCount = currentCount;
-      devices = newDevices;
-      deviceSelect.innerHTML = '';
-      if (devices.length === 0) {
-        deviceSelect.innerHTML = '<option value="">No se encontraron USB</option>';
-        setStatus('No se encontraron USB');
-        return;
-      }
-      devices.forEach((dev, index) => {
-        const opt = document.createElement('option');
-        opt.value = index;
-        const typeLabel = dev.type === 'hardware' ? '[Solo hardware] ' : '';
-        opt.textContent = `${typeLabel}${dev.model || dev.name} - ${dev.size}`;
-        deviceSelect.appendChild(opt);
-      });
-      onDeviceChanged();
-      setStatus('Listo', 'ok');
+    // Detectar cambios en la cantidad de dispositivos (solo en auto-refresh)
+    if (!forceRefresh && currentCount === lastDeviceCount) {
+      return; // No hay cambios, no actualizar UI
     }
+    
+    lastDeviceCount = currentCount;
+    devices = newDevices;
+    deviceSelect.innerHTML = '';
+    if (devices.length === 0) {
+      deviceSelect.innerHTML = '<option value="">No se encontraron USB</option>';
+      setStatus('No se encontraron USB');
+      return;
+    }
+    devices.forEach((dev, index) => {
+      const opt = document.createElement('option');
+      opt.value = index;
+      const typeLabel = dev.type === 'hardware' ? '[Solo hardware] ' : '';
+      opt.textContent = `${typeLabel}${dev.model || dev.name} - ${dev.size}`;
+      deviceSelect.appendChild(opt);
+    });
+    onDeviceChanged();
+    setStatus('Listo', 'ok');
   } catch (e) {
     appendLog(`Error inesperado: ${e.message}`, 'error');
     setStatus('Error', 'error');
@@ -168,7 +170,7 @@ async function loadDevices() {
 function startAutoRefresh() {
   if (autoRefreshInterval) clearInterval(autoRefreshInterval);
   autoRefreshInterval = setInterval(() => {
-    loadDevices();
+    loadDevices(false); // Auto-refresh: solo actualizar si hay cambios
   }, 3000); // Verificar cada 3 segundos
 }
 
@@ -201,8 +203,7 @@ function onDeviceChanged() {
 
 deviceSelect.addEventListener('change', onDeviceChanged);
 refreshBtn.addEventListener('click', () => {
-  lastDeviceCount = -1; // Forzar recarga completa
-  loadDevices();
+  loadDevices(true); // Forzar recarga completa
 });
 
 function getSelectedFormat() {
@@ -479,5 +480,5 @@ navButtons.forEach((btn) => {
 });
 
 // Initial load
-loadDevices();
+loadDevices(true); // Forzar actualización en carga inicial
 startAutoRefresh();
