@@ -708,7 +708,6 @@ deletePartitionBtn.addEventListener('click', async () => {
 
 // Content analysis
 const analyzeContentBtn = document.getElementById('analyzeContentBtn');
-const contentStats = document.getElementById('contentStats');
 const advancedAnalysis = document.getElementById('advancedAnalysis');
 const findEmptyFoldersBtn = document.getElementById('findEmptyFoldersBtn');
 const findDuplicatesBtn = document.getElementById('findDuplicatesBtn');
@@ -811,7 +810,6 @@ analyzeContentBtn.addEventListener('click', async () => {
     
     if (result.success) {
       const stats = result.stats;
-      // Update both old and new stat displays
       document.getElementById('videoCount').textContent = stats.videos;
       document.getElementById('imageCount').textContent = stats.images;
       document.getElementById('audioCount').textContent = stats.audio;
@@ -819,14 +817,6 @@ analyzeContentBtn.addEventListener('click', async () => {
       document.getElementById('otherCount').textContent = stats.other;
       document.getElementById('totalCount').textContent = stats.total;
       
-      document.getElementById('videoCountMain').textContent = stats.videos;
-      document.getElementById('imageCountMain').textContent = stats.images;
-      document.getElementById('audioCountMain').textContent = stats.audio;
-      document.getElementById('documentCountMain').textContent = stats.documents;
-      document.getElementById('otherCountMain').textContent = stats.other;
-      document.getElementById('totalCountMain').textContent = stats.total;
-      
-      contentStats.classList.remove('hidden');
       advancedAnalysis.classList.remove('hidden');
       
       // Expand content analysis section
