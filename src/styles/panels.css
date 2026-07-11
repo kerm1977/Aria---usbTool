@@ -1,0 +1,121 @@
+.panel {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.panel.active {
+  display: flex;
+}
+
+.panel-title {
+  font-size: 1.2rem;
+  color: #f1c40f;
+  margin-bottom: 5px;
+}
+
+.panel-desc {
+  font-size: 0.85rem;
+  color: #bdc3c7;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.form-row label {
+  min-width: 90px;
+  font-size: 0.9rem;
+}
+
+.log-area {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 14px;
+  padding: 15px;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: #dfe6e9;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  user-select: text;
+  -webkit-user-select: text;
+  min-height: 0;
+}
+
+.log-area .ok { color: #2ecc71; }
+.log-area .error { color: #e74c3c; }
+.log-area .warn { color: #f1c40f; }
+
+.log-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.progress-container {
+  margin-bottom: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+  height: 24px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2ecc71, #27ae60);
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 8px;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #95a5a6;
+}
+
+#deviceInfo {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #f1c40f;
+}
+
+.radio-group {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}

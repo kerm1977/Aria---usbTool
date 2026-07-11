@@ -1,0 +1,87 @@
+@media (max-width: 800px) {
+  .container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 15px;
+    flex-shrink: 0;
+  }
+  .nav-btn {
+    flex: 1;
+    min-width: 120px;
+  }
+  .main-content {
+    padding: 15px;
+  }
+  .glass-card {
+    padding: 15px;
+  }
+  .form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .form-row label {
+    min-width: auto;
+  }
+  .radio-group {
+    flex-wrap: wrap;
+  }
+  #panel-particionar .form-row {
+    flex-wrap: wrap;
+  }
+  .content-stats {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 15px;
+  }
+  .stat-icon {
+    font-size: 2rem;
+  }
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  .file-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .file-actions {
+    margin-top: 5px;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    padding: 10px;
+    gap: 10px;
+  }
+  .brand h1 {
+    font-size: 1.1rem;
+  }
+  .main-content {
+    padding: 10px;
+    gap: 15px;
+  }
+  .glass-card {
+    padding: 12px;
+  }
+  .header-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .device-selector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  select, input[type="text"] {
+    min-width: 100%;
+  }
+  button.action-btn {
+    width: 100%;
+  }
+}

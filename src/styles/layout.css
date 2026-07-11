@@ -1,0 +1,71 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 25px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.brand h1 {
+  font-size: 1.4rem;
+  color: #f1c40f;
+  text-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
+}
+
+.brand p {
+  font-size: 0.75rem;
+  color: #bdc3c7;
+}
+
+.nav-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.25s ease;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-btn svg {
+  flex-shrink: 0;
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(4px);
+}
+
+.nav-btn.active {
+  background: rgba(230, 126, 34, 0.25);
+  border-color: rgba(230, 126, 34, 0.6);
+  box-shadow: 0 0 15px rgba(230, 126, 34, 0.3);
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: visible;
+}

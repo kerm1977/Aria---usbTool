@@ -1,0 +1,72 @@
+.instructions-box {
+  background: rgba(230, 126, 34, 0.1);
+  border: 1px solid rgba(230, 126, 34, 0.3);
+  border-radius: 12px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.instructions-box h4 {
+  color: #f1c40f;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.instructions-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.instructions-box li {
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: #dfe6e9;
+  line-height: 1.4;
+}
+
+.instructions-box li strong {
+  color: #e67e22;
+}
+
+.toggle-instructions-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+.toggle-instructions-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.toggle-instructions-btn svg {
+  flex-shrink: 0;
+}
+
+.smart-options,
+.manual-options {
+  transition: all 0.3s ease;
+}
+
+#panel-particionar .glass-card {
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+#panel-particionar .form-row {
+  flex-wrap: nowrap;
+}
+
+#panel-particionar input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+}

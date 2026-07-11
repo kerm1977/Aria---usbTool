@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('usbAPI', {
+  onDiscsChanged: (callback) => ipcRenderer.on('discs-changed', (event, data) => callback(data)),
   listDevices: () => ipcRenderer.invoke('list-usb-devices'),
   killProcesses: (mountpoint) => ipcRenderer.invoke('kill-processes', mountpoint),
   ejectDevice: (partition, mountpoint) => ipcRenderer.invoke('eject-device', partition, mountpoint),
@@ -19,5 +20,8 @@ contextBridge.exposeInMainWorld('usbAPI', {
   findLargeFiles: (mountpoint) => ipcRenderer.invoke('find-large-files', mountpoint),
   deletePath: (path, password) => ipcRenderer.invoke('delete-path', path, password),
   openPath: (path) => ipcRenderer.invoke('open-path', path),
-  getDiskSpace: (mountpoint) => ipcRenderer.invoke('get-disk-space', mountpoint)
+  getDiskSpace: (mountpoint) => ipcRenderer.invoke('get-disk-space', mountpoint),
+  scanDiscs: () => ipcRenderer.invoke('scan-discs'),
+  scanDiscHealth: (devicePath) => ipcRenderer.invoke('scan-disc-health', devicePath),
+  deepRepairDisc: (devicePath, password) => ipcRenderer.invoke('deep-repair-disc', devicePath, password)
 });
