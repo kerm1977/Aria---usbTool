@@ -25,6 +25,9 @@
   "build": {
     "appId": "com.usbtools.app",
     "productName": "USB Tools Pro",
+    "directories": {
+      "output": "/home/pmint/Documentos"
+    },
     "linux": {
       "target": [
         "deb"
