@@ -711,6 +711,20 @@ const findEmptyFoldersBtn = document.getElementById('findEmptyFoldersBtn');
 const findDuplicatesBtn = document.getElementById('findDuplicatesBtn');
 const findLargeFilesBtn = document.getElementById('findLargeFilesBtn');
 
+// Collapsible functionality
+document.querySelectorAll('.collapsible-header').forEach(header => {
+  header.addEventListener('click', () => {
+    const targetId = header.dataset.target;
+    const content = document.getElementById(targetId);
+    const toggleBtn = header.querySelector('.toggle-btn');
+    
+    if (content) {
+      content.classList.toggle('expanded');
+      toggleBtn.classList.toggle('collapsed');
+    }
+  });
+});
+
 analyzeContentBtn.addEventListener('click', async () => {
   if (!selected) {
     appendLog('Selecciona un dispositivo primero.', 'error');
@@ -794,6 +808,7 @@ analyzeContentBtn.addEventListener('click', async () => {
     
     if (result.success) {
       const stats = result.stats;
+      // Update both old and new stat displays
       document.getElementById('videoCount').textContent = stats.videos;
       document.getElementById('imageCount').textContent = stats.images;
       document.getElementById('audioCount').textContent = stats.audio;
@@ -801,8 +816,27 @@ analyzeContentBtn.addEventListener('click', async () => {
       document.getElementById('otherCount').textContent = stats.other;
       document.getElementById('totalCount').textContent = stats.total;
       
+      document.getElementById('videoCountMain').textContent = stats.videos;
+      document.getElementById('imageCountMain').textContent = stats.images;
+      document.getElementById('audioCountMain').textContent = stats.audio;
+      document.getElementById('documentCountMain').textContent = stats.documents;
+      document.getElementById('otherCountMain').textContent = stats.other;
+      document.getElementById('totalCountMain').textContent = stats.total;
+      
       contentStats.classList.remove('hidden');
       advancedAnalysis.classList.remove('hidden');
+      
+      // Expand content analysis section
+      const contentStatsList = document.getElementById('contentStatsList');
+      if (contentStatsList) {
+        contentStatsList.classList.add('expanded');
+        const header = document.querySelector('[data-target="contentStatsList"]');
+        if (header) {
+          const toggleBtn = header.querySelector('.toggle-btn');
+          if (toggleBtn) toggleBtn.classList.remove('collapsed');
+        }
+      }
+      
       appendLog(`Análisis completado:\n- Videos: ${stats.videos}\n- Imágenes: ${stats.images}\n- Audios: ${stats.audio}\n- Documentos: ${stats.documents}\n- Otros: ${stats.other}\n- Total: ${stats.total}`, 'ok');
       setStatus('Análisis completado', 'ok');
     } else {

@@ -365,30 +365,104 @@
             </div>
           </div>
           <div class="advanced-analysis hidden" id="advancedAnalysis">
-            <h4 class="section-title">Análisis Avanzado</h4>
-            
-            <div class="analysis-section">
-              <div class="section-header">
-                <h5>📁 Carpetas Vacías</h5>
-                <button class="action-btn small" id="findEmptyFoldersBtn">Buscar</button>
+            <div class="collapsible-section">
+              <div class="collapsible-header" data-target="contentStatsList">
+                <h4 class="section-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+                  Análisis de Contenido
+                </h4>
+                <button class="toggle-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
               </div>
-              <div class="file-list" id="emptyFoldersList"></div>
+              <div class="collapsible-content" id="contentStatsList">
+                <div class="content-stats" style="display: grid;">
+                  <div class="stat-card">
+                    <div class="stat-icon">🎬</div>
+                    <div class="stat-label">Videos</div>
+                    <div class="stat-value" id="videoCountMain">0</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-icon">🖼️</div>
+                    <div class="stat-label">Imágenes</div>
+                    <div class="stat-value" id="imageCountMain">0</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-icon">🎵</div>
+                    <div class="stat-label">Audios</div>
+                    <div class="stat-value" id="audioCountMain">0</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-icon">📄</div>
+                    <div class="stat-label">Documentos</div>
+                    <div class="stat-value" id="documentCountMain">0</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-icon">📁</div>
+                    <div class="stat-label">Otros</div>
+                    <div class="stat-value" id="otherCountMain">0</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-icon">💾</div>
+                    <div class="stat-label">Total</div>
+                    <div class="stat-value" id="totalCountMain">0</div>
+                  </div>
+                </div>
+              </div>
             </div>
             
-            <div class="analysis-section">
-              <div class="section-header">
-                <h5>🔁 Archivos Duplicados</h5>
-                <button class="action-btn small" id="findDuplicatesBtn">Buscar</button>
+            <div class="collapsible-section">
+              <div class="collapsible-header" data-target="emptyFoldersSection">
+                <h4 class="section-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  Carpetas Vacías
+                </h4>
+                <button class="toggle-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
               </div>
-              <div class="file-list" id="duplicatesList"></div>
+              <div class="collapsible-content" id="emptyFoldersSection">
+                <div class="section-actions">
+                  <button class="action-btn small" id="findEmptyFoldersBtn">Buscar</button>
+                </div>
+                <div class="file-list" id="emptyFoldersList"></div>
+              </div>
             </div>
             
-            <div class="analysis-section">
-              <div class="section-header">
-                <h5>📦 Archivos Grandes</h5>
-                <button class="action-btn small" id="findLargeFilesBtn">Buscar</button>
+            <div class="collapsible-section">
+              <div class="collapsible-header" data-target="duplicatesSection">
+                <h4 class="section-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                  Archivos Duplicados
+                </h4>
+                <button class="toggle-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
               </div>
-              <div class="file-list" id="largeFilesList"></div>
+              <div class="collapsible-content" id="duplicatesSection">
+                <div class="section-actions">
+                  <button class="action-btn small" id="findDuplicatesBtn">Buscar</button>
+                </div>
+                <div class="file-list" id="duplicatesList"></div>
+              </div>
+            </div>
+            
+            <div class="collapsible-section">
+              <div class="collapsible-header" data-target="largeFilesSection">
+                <h4 class="section-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></svg>
+                  Archivos Grandes
+                </h4>
+                <button class="toggle-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+              </div>
+              <div class="collapsible-content" id="largeFilesSection">
+                <div class="section-actions">
+                  <button class="action-btn small" id="findLargeFilesBtn">Buscar</button>
+                </div>
+                <div class="file-list" id="largeFilesList"></div>
+              </div>
             </div>
           </div>
         </div>
