@@ -579,6 +579,54 @@ ipcMain.handle('createSmartPartition', async (event, device, preset, password) =
   }
 });
 
+ipcMain.handle('analyze-content', async (event, mountpoint) => {
+  try {
+    if (!mountpoint || mountpoint === 'no montado' || mountpoint === null) {
+      return { success: false, output: 'El dispositivo no está montado. Monta el dispositivo primero.' };
+    }
+
+    const stats = {
+      videos: 0,
+      images: 0,
+      audio: 0,
+      documents: 0,
+      other: 0,
+      total: 0
+    };
+
+    // Extensiones de archivos por categoría
+    const videoExtensions = ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', 'm4v', '3gp', 'ts', 'mpg', 'mpeg'];
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'svg', 'ico', 'heic', 'raw', 'cr2', 'nef'];
+    const audioExtensions = ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a', 'opus', 'aiff', 'alac'];
+    const documentExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'odt', 'ods', 'odp', 'csv', 'json', 'xml', 'html', 'md'];
+
+    // Función para contar archivos por extensión
+    const countByExtension = async (extensions) => {
+      const extPattern = extensions.map(ext => `*.${ext}`).join(' -o -name ');
+      const cmd = `find "${mountpoint}" -type f \\( -name ${extPattern} \\) 2>/dev/null | wc -l`;
+      const result = await runShell(cmd, 30000);
+      return parseInt(result.stdout.trim()) || 0;
+    };
+
+    // Contar archivos por categoría
+    stats.videos = await countByExtension(videoExtensions);
+    stats.images = await countByExtension(imageExtensions);
+    stats.audio = await countByExtension(audioExtensions);
+    stats.documents = await countByExtension(documentExtensions);
+
+    // Contar total de archivos
+    const totalResult = await runShell(`find "${mountpoint}" -type f 2>/dev/null | wc -l`, 30000);
+    stats.total = parseInt(totalResult.stdout.trim()) || 0;
+
+    // Calcular otros
+    stats.other = stats.total - stats.videos - stats.images - stats.audio - stats.documents;
+
+    return { success: true, stats };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
 ipcMain.handle('mount-device', async (event, partition) => {
   try {
     const devicePath = `/dev/${partition}`;

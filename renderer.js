@@ -655,6 +655,58 @@ deletePartitionBtn.addEventListener('click', async () => {
   }
 });
 
+// Content analysis
+const analyzeContentBtn = document.getElementById('analyzeContentBtn');
+const contentStats = document.getElementById('contentStats');
+
+analyzeContentBtn.addEventListener('click', async () => {
+  if (!selected) {
+    appendLog('Selecciona un dispositivo primero.', 'error');
+    setStatus('Error', 'error');
+    return;
+  }
+
+  const mountpoint = selected.mountpoint;
+  if (!mountpoint || mountpoint === 'no montado' || mountpoint === null) {
+    appendLog('El dispositivo no está montado. Monta el dispositivo primero.', 'error');
+    setStatus('Error', 'error');
+    return;
+  }
+
+  setStatus('Analizando contenido...', 'warn');
+  showProgress();
+  showCancelButton();
+  analyzeContentBtn.disabled = true;
+
+  try {
+    const result = await window.usbAPI.analyzeContent(mountpoint);
+    
+    if (result.success) {
+      const stats = result.stats;
+      document.getElementById('videoCount').textContent = stats.videos;
+      document.getElementById('imageCount').textContent = stats.images;
+      document.getElementById('audioCount').textContent = stats.audio;
+      document.getElementById('documentCount').textContent = stats.documents;
+      document.getElementById('otherCount').textContent = stats.other;
+      document.getElementById('totalCount').textContent = stats.total;
+      
+      contentStats.classList.remove('hidden');
+      appendLog(`Análisis completado:\n- Videos: ${stats.videos}\n- Imágenes: ${stats.images}\n- Audios: ${stats.audio}\n- Documentos: ${stats.documents}\n- Otros: ${stats.other}\n- Total: ${stats.total}`, 'ok');
+      setStatus('Análisis completado', 'ok');
+    } else {
+      appendLog(result.output, 'error');
+      setStatus('Error', 'error');
+    }
+  } catch (err) {
+    appendLog(`Error: ${err.message}`, 'error');
+    setStatus('Error', 'error');
+  } finally {
+    hideProgress();
+    hideCancelButton();
+    analyzeContentBtn.disabled = false;
+  }
+});
+
 // Initial load
 loadDevices(true); // Forzar actualización en carga inicial
 startAutoRefresh();
