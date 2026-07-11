@@ -308,8 +308,12 @@ ipcMain.handle('repair-device', async (event, partition, fsType) => {
 
 ipcMain.handle('format-device', async (event, partition, fsType, label, password) => {
   try {
+    // Matar procesos que usan el dispositivo
+    const fuser = await runShellWithPassword(`fuser -km /dev/${partition}`, password, 10000);
+    // Ignorar error si no hay procesos
+    
     // Desmontar el dispositivo antes de formatear
-    const umount = await runShell(`umount /dev/${partition}`, 10000);
+    const umount = await runShellWithPassword(`umount /dev/${partition}`, password, 10000);
     // Ignorar error si ya estaba desmontado
     
     const safeLabel = (label || 'USB').replace(/[^a-zA-Z0-9_-]/g, '').toUpperCase().slice(0, 11);
