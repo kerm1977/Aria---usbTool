@@ -313,8 +313,12 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
     // Ignorar error si no hay procesos
     
     // Desmontar el dispositivo antes de formatear
-    const umount = await runShellWithPassword(`umount /dev/${partition}`, password, 10000);
+    const umount = await runShellWithPassword(`umount -f /dev/${partition}`, password, 10000);
     // Ignorar error si ya estaba desmontado
+    
+    // Habilitar modo escritura en el dispositivo de bloque
+    const blockdev = await runShellWithPassword(`blockdev --setrw /dev/${partition}`, password, 5000);
+    // Ignorar error si no es necesario
     
     const safeLabel = (label || 'USB').replace(/[^a-zA-Z0-9_-]/g, '').toUpperCase().slice(0, 11);
     let cmd;
