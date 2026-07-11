@@ -170,6 +170,16 @@ button.action-btn.danger:hover {
   background: #a93226;
 }
 
+button.action-btn.small {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  margin-right: 8px;
+}
+
+.hidden {
+  display: none !important;
+}
+
 .panel {
   display: none;
   flex-direction: column;

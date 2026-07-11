@@ -38,13 +38,13 @@ function setStatus(text, type = 'info') {
 }
 
 function showProgress() {
-  progressContainer.style.display = 'block';
+  progressContainer.classList.remove('hidden');
   progressBar.style.width = '0%';
   progressText.textContent = '0%';
 }
 
 function hideProgress() {
-  progressContainer.style.display = 'none';
+  progressContainer.classList.add('hidden');
 }
 
 function updateProgress(percent, text) {
@@ -53,11 +53,11 @@ function updateProgress(percent, text) {
 }
 
 function showCancelButton() {
-  cancelBtn.style.display = 'inline-block';
+  cancelBtn.classList.remove('hidden');
 }
 
 function hideCancelButton() {
-  cancelBtn.style.display = 'none';
+  cancelBtn.classList.add('hidden');
 }
 
 function getSelectedPartition() {
