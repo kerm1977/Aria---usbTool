@@ -224,6 +224,15 @@
         <div class="glass-card">
           <h3 class="panel-title">Particionar USB</h3>
           <p class="panel-desc">Crea, elimina y gestiona particiones en el dispositivo USB.</p>
+          <div class="instructions-box">
+            <h4>Instrucciones:</h4>
+            <ul>
+              <li><strong>Para crear una partición:</strong> Selecciona el dispositivo completo (ej: /dev/sdc, no /dev/sdc1), elige la tabla de particiones (GPT recomendado), deja los campos vacíos para usar todo el espacio (0% a 100%) o especifica valores personalizados, ingresa tu contraseña y haz clic en "CREAR PARTICIÓN".</li>
+              <li><strong>Para eliminar una partición:</strong> Selecciona el dispositivo, ingresa el número de partición (ej: 1 para /dev/sdc1), tu contraseña y haz clic en "ELIMINAR PARTICIÓN".</li>
+              <li><strong>Formato de valores:</strong> Usa porcentajes (ej: 0%, 50%, 100%) o megabytes (ej: 51200MB para 50GB).</li>
+              <li><strong>⚠️ Advertencia:</strong> Crear o eliminar particiones borrará todos los datos del dispositivo.</li>
+            </ul>
+          </div>
           <div class="form-row">
             <label>Tabla de particiones:</label>
             <div class="radio-group">

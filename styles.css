@@ -317,6 +317,37 @@ button.action-btn.small {
   display: none !important;
 }
 
+.instructions-box {
+  background: rgba(230, 126, 34, 0.1);
+  border: 1px solid rgba(230, 126, 34, 0.3);
+  border-radius: 12px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.instructions-box h4 {
+  color: #f1c40f;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.instructions-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.instructions-box li {
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: #dfe6e9;
+  line-height: 1.4;
+}
+
+.instructions-box li strong {
+  color: #e67e22;
+}
+
 #panel-particionar .glass-card {
   overflow-y: auto;
   max-height: 400px;
