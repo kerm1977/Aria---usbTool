@@ -8,6 +8,7 @@ const analyzeBtn = document.getElementById('analyzeBtn');
 const repairBtn = document.getElementById('repairBtn');
 const formatBtn = document.getElementById('formatBtn');
 const volumeLabel = document.getElementById('volumeLabel');
+const sudoPassword = document.getElementById('sudoPassword');
 
 let devices = [];
 let selected = null;
@@ -343,8 +344,13 @@ formatBtn.addEventListener('click', async () => {
   const partition = getSelectedPartition();
   const fsType = getSelectedFormat();
   const label = volumeLabel.value.trim() || 'USB';
+  const password = sudoPassword.value.trim();
   if (!partition) {
     appendLog('Selecciona una unidad primero.', 'error');
+    return;
+  }
+  if (!password) {
+    appendLog('Ingresa la contraseña sudo para formatear.', 'error');
     return;
   }
   const confirmText = `¿Seguro que deseas formatear /dev/${partition} como ${fsType.toUpperCase()}? Se perderán todos los datos.`;
@@ -367,7 +373,7 @@ formatBtn.addEventListener('click', async () => {
   }, 500);
   
   try {
-    const result = await window.usbAPI.formatDevice(partition, fsType, label);
+    const result = await window.usbAPI.formatDevice(partition, fsType, label, password);
     clearInterval(progressInterval);
     updateProgress(100, 'Completado');
     appendLog(result.output, result.success ? 'ok' : 'error');

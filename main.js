@@ -57,6 +57,22 @@ function runShell(cmd, timeoutMs = 120000) {
   });
 }
 
+function runShellWithPassword(cmd, password, timeoutMs = 120000) {
+  return new Promise((resolve) => {
+    exec(`echo '${password}' | sudo -S ${cmd}`, { maxBuffer: 1024 * 1024, timeout: timeoutMs }, (error, stdout, stderr) => {
+      if (error) {
+        if (error.killed && error.signal === 'SIGTERM') {
+          resolve({ code: 'TIMEOUT', stdout, stderr: (stderr || '') + '\n[Comando cancelado por timeout]' });
+        } else {
+          resolve({ code: error.code || 1, stdout, stderr: stderr || error.message });
+        }
+      } else {
+        resolve({ code: 0, stdout, stderr });
+      }
+    });
+  });
+}
+
 function runShellAsUser(cmd, timeoutMs = 120000) {
   return new Promise((resolve) => {
     exec(cmd, { maxBuffer: 1024 * 1024, timeout: timeoutMs }, (error, stdout, stderr) => {
@@ -284,7 +300,7 @@ ipcMain.handle('repair-device', async (event, partition, fsType) => {
   }
 });
 
-ipcMain.handle('format-device', async (event, partition, fsType, label) => {
+ipcMain.handle('format-device', async (event, partition, fsType, label, password) => {
   try {
     const safeLabel = (label || 'USB').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 11);
     let cmd;
@@ -297,7 +313,7 @@ ipcMain.handle('format-device', async (event, partition, fsType, label) => {
     } else {
       return { success: false, output: 'Formato no soportado. Use fat32, exfat o ntfs.' };
     }
-    const result = await runShell(cmd, 60000);
+    const result = await runShellWithPassword(cmd, password, 60000);
     return { success: true, output: (result.stdout || '') + (result.stderr || '') };
   } catch (e) {
     return { success: false, output: (e.stdout || '') + (e.stderr || '') };
