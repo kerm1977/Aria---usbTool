@@ -10,6 +10,7 @@ const repairBtn = document.getElementById('repairBtn');
 const formatBtn = document.getElementById('formatBtn');
 const volumeLabel = document.getElementById('volumeLabel');
 const copyLogsBtn = document.getElementById('copyLogsBtn');
+const cancelBtn = document.getElementById('cancelBtn');
 const progressContainer = document.getElementById('progressContainer');
 const progressBar = document.getElementById('progressBar');
 const progressText = document.getElementById('progressText');
@@ -48,6 +49,14 @@ function hideProgress() {
 function updateProgress(percent, text) {
   progressBar.style.width = `${percent}%`;
   progressText.textContent = text || `${percent}%`;
+}
+
+function showCancelButton() {
+  cancelBtn.style.display = 'inline-block';
+}
+
+function hideCancelButton() {
+  cancelBtn.style.display = 'none';
 }
 
 function getSelectedPartition() {
@@ -212,6 +221,7 @@ analyzeBtn.addEventListener('click', async () => {
   setStatus('Analizando...');
   analyzeBtn.disabled = true;
   showProgress();
+  showCancelButton();
   
   let progress = 0;
   const progressInterval = setInterval(() => {
@@ -230,6 +240,7 @@ analyzeBtn.addEventListener('click', async () => {
   } catch (e) {
     clearInterval(progressInterval);
     hideProgress();
+    hideCancelButton();
     appendLog(`Error: ${e.message}`, 'error');
     setStatus('Error', 'error');
   } finally {
@@ -249,6 +260,7 @@ repairBtn.addEventListener('click', async () => {
   setStatus('Reparando...');
   repairBtn.disabled = true;
   showProgress();
+  showCancelButton();
   
   let progress = 0;
   const progressInterval = setInterval(() => {
@@ -268,6 +280,7 @@ repairBtn.addEventListener('click', async () => {
   } catch (e) {
     clearInterval(progressInterval);
     hideProgress();
+    hideCancelButton();
     appendLog(`Error: ${e.message}`, 'error');
     setStatus('Error', 'error');
   } finally {
@@ -293,6 +306,7 @@ formatBtn.addEventListener('click', async () => {
   setStatus('Formateando...');
   formatBtn.disabled = true;
   showProgress();
+  showCancelButton();
   
   let progress = 0;
   const progressInterval = setInterval(() => {
@@ -313,6 +327,7 @@ formatBtn.addEventListener('click', async () => {
   } catch (e) {
     clearInterval(progressInterval);
     hideProgress();
+    hideCancelButton();
     appendLog(`Error: ${e.message}`, 'error');
     setStatus('Error', 'error');
   } finally {
@@ -342,6 +357,23 @@ copyLogsBtn.addEventListener('click', async () => {
       setStatus('No se pudo copiar', 'error');
       appendLog('No se pudo copiar: ' + err.message, 'error');
     }
+  }
+});
+
+// Cancel operations
+cancelBtn.addEventListener('click', async () => {
+  try {
+    const result = await window.usbAPI.cancelOperations();
+    appendLog(result.output, result.success ? 'warn' : 'error');
+    setStatus('Operación cancelada', 'warn');
+    hideProgress();
+    hideCancelButton();
+    analyzeBtn.disabled = false;
+    repairBtn.disabled = false;
+    formatBtn.disabled = false;
+  } catch (e) {
+    appendLog(`Error al cancelar: ${e.message}`, 'error');
+    setStatus('Error', 'error');
   }
 });
 

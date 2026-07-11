@@ -3,6 +3,7 @@ const path = require('path');
 const { exec, spawn } = require('child_process');
 
 let mainWindow;
+let activeProcesses = new Map();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -40,7 +41,7 @@ function parseSize(sizeStr) {
   return Math.floor(value * (multipliers[unit] || 1));
 }
 
-function runShell(cmd, timeoutMs = 30000) {
+function runShell(cmd, timeoutMs = 120000) {
   return new Promise((resolve) => {
     exec(`sudo ${cmd}`, { maxBuffer: 1024 * 1024, timeout: timeoutMs }, (error, stdout, stderr) => {
       if (error) {
@@ -56,7 +57,7 @@ function runShell(cmd, timeoutMs = 30000) {
   });
 }
 
-function runShellAsUser(cmd, timeoutMs = 30000) {
+function runShellAsUser(cmd, timeoutMs = 120000) {
   return new Promise((resolve) => {
     exec(cmd, { maxBuffer: 1024 * 1024, timeout: timeoutMs }, (error, stdout, stderr) => {
       if (error) {
@@ -290,5 +291,23 @@ ipcMain.handle('format-device', async (event, partition, fsType, label) => {
     return { success: true, output: (result.stdout || '') + (result.stderr || '') };
   } catch (e) {
     return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
+ipcMain.handle('cancel-operations', async () => {
+  try {
+    let killed = 0;
+    activeProcesses.forEach((proc, id) => {
+      try {
+        proc.kill('SIGTERM');
+        killed++;
+      } catch (e) {
+        console.error(`Error killing process ${id}:`, e);
+      }
+    });
+    activeProcesses.clear();
+    return { success: true, output: `Canceladas ${killed} operaciones.` };
+  } catch (e) {
+    return { success: false, output: e.message || e.toString() };
   }
 });
