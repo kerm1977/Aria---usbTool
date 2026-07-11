@@ -348,6 +348,34 @@ button.action-btn.small {
   color: #e67e22;
 }
 
+.toggle-instructions-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+.toggle-instructions-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.toggle-instructions-btn svg {
+  flex-shrink: 0;
+}
+
+.smart-options,
+.manual-options {
+  transition: all 0.3s ease;
+}
+
 #panel-particionar .glass-card {
   overflow-y: auto;
   max-height: 400px;

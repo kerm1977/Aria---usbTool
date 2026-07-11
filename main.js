@@ -500,6 +500,85 @@ ipcMain.handle('delete-partition', async (event, device, partitionNumber, passwo
   }
 });
 
+ipcMain.handle('createSmartPartition', async (event, device, preset, password) => {
+  try {
+    const output = [];
+    
+    // Desmontar el dispositivo primero
+    const umount = await runShellWithPassword(`umount /dev/${device}*`, password, 10000);
+    output.push(umount.stdout || '', umount.stderr || '');
+    
+    // Crear tabla de particiones GPT
+    const mklabel = await runShellWithPassword(`parted -s /dev/${device} mklabel gpt`, password, 10000);
+    output.push(mklabel.stdout || '', mklabel.stderr || '');
+    
+    // Esperar a que se cree la tabla
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    let partitions = [];
+    
+    switch (preset) {
+      case 'windows':
+        // Una partición NTFS para todo el espacio
+        partitions = [{ start: '0%', end: '100%', fs: 'ntfs', label: 'WINDOWS' }];
+        break;
+      case 'linux':
+        // Una partición ext4 para todo el espacio
+        partitions = [{ start: '0%', end: '100%', fs: 'ext4', label: 'LINUX' }];
+        break;
+      case 'multimedia':
+        // Una partición exFAT para todo el espacio
+        partitions = [{ start: '0%', end: '100%', fs: 'exfat', label: 'MEDIA' }];
+        break;
+      case 'dual':
+        // 50% NTFS para Windows, 50% ext4 para Linux
+        partitions = [
+          { start: '0%', end: '50%', fs: 'ntfs', label: 'WINDOWS' },
+          { start: '50%', end: '100%', fs: 'ext4', label: 'LINUX' }
+        ];
+        break;
+      default:
+        return { success: false, output: 'Preset no reconocido.' };
+    }
+    
+    // Crear particiones según el preset
+    for (let i = 0; i < partitions.length; i++) {
+      const part = partitions[i];
+      const mkpart = await runShellWithPassword(`parted -s /dev/${device} mkpart primary ${part.start} ${part.end}`, password, 10000);
+      output.push(mkpart.stdout || '', mkpart.stderr || '');
+      
+      // Esperar a que se cree la partición
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Formatear la partición
+      const partitionNum = i + 1;
+      const partitionPath = `/dev/${device}${partitionNum}`;
+      let formatCmd;
+      
+      switch (part.fs) {
+        case 'ntfs':
+          formatCmd = `mkfs.ntfs -f -L ${part.label} ${partitionPath}`;
+          break;
+        case 'ext4':
+          formatCmd = `mkfs.ext4 -L ${part.label} ${partitionPath}`;
+          break;
+        case 'exfat':
+          formatCmd = `mkfs.exfat -n ${part.label} ${partitionPath}`;
+          break;
+        default:
+          formatCmd = `mkfs.ext4 -L ${part.label} ${partitionPath}`;
+      }
+      
+      const format = await runShellWithPassword(formatCmd, password, 60000);
+      output.push(`Formateando partición ${partitionNum} como ${part.fs}...`, format.stdout || '', format.stderr || '');
+    }
+    
+    return { success: true, output: output.join('\n') };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
 ipcMain.handle('mount-device', async (event, partition) => {
   try {
     const devicePath = `/dev/${partition}`;

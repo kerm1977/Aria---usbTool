@@ -501,6 +501,27 @@ const deletePartitionBtn = document.getElementById('deletePartitionBtn');
 const partitionSize = document.getElementById('partitionSize');
 const partitionStart = document.getElementById('partitionStart');
 const partitionEnd = document.getElementById('partitionEnd');
+const toggleInstructionsBtn = document.getElementById('toggleInstructionsBtn');
+const instructionsBox = document.getElementById('instructionsBox');
+const partitionPreset = document.getElementById('partitionPreset');
+
+// Toggle instructions
+toggleInstructionsBtn.addEventListener('click', () => {
+  instructionsBox.classList.toggle('hidden');
+  const isHidden = instructionsBox.classList.contains('hidden');
+  toggleInstructionsBtn.innerHTML = isHidden 
+    ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12" y1="8" y2="12"/></svg> Mostrar instrucciones'
+    : '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg> Ocultar instrucciones';
+});
+
+// Toggle partition mode (manual/smart)
+document.querySelectorAll('input[name="partitionMode"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    const isSmart = e.target.value === 'smart';
+    document.getElementById('smartOptions').classList.toggle('hidden', !isSmart);
+    document.querySelectorAll('.manual-options').forEach(el => el.classList.toggle('hidden', isSmart));
+  });
+});
 
 // Add password input for partition operations
 const partitionPasswordInput = document.createElement('input');
@@ -524,30 +545,13 @@ createPartitionBtn.addEventListener('click', async () => {
   }
 
   const device = selected.name.replace('/dev/', '');
-  const tableType = document.querySelector('input[name="partitionTable"]:checked').value;
-  let start = partitionStart.value.trim();
-  let end = partitionEnd.value.trim();
   const password = partitionPasswordInput.value;
+  const partitionMode = document.querySelector('input[name="partitionMode"]:checked').value;
 
   if (!password) {
     appendLog('Ingresa la contraseña del sistema.', 'error');
     setStatus('Error', 'error');
     return;
-  }
-
-  // Usar valores predeterminados si están vacíos
-  if (!start) start = '0%';
-  if (!end) end = '100%';
-
-  // Validar que inicio sea menor que fin (solo si ambos son porcentajes)
-  if (start.includes('%') && end.includes('%')) {
-    const startNum = parseInt(start.replace('%', ''));
-    const endNum = parseInt(end.replace('%', ''));
-    if (isNaN(startNum) || isNaN(endNum) || startNum >= endNum) {
-      appendLog('El inicio debe ser menor que el fin.', 'error');
-      setStatus('Error', 'error');
-      return;
-    }
   }
 
   setStatus('Creando partición...', 'warn');
@@ -557,7 +561,37 @@ createPartitionBtn.addEventListener('click', async () => {
   deletePartitionBtn.disabled = true;
 
   try {
-    const result = await window.usbAPI.createPartition(device, tableType, start, end, password);
+    let result;
+    if (partitionMode === 'smart') {
+      const preset = partitionPreset.value;
+      result = await window.usbAPI.createSmartPartition(device, preset, password);
+    } else {
+      const tableType = document.querySelector('input[name="partitionTable"]:checked').value;
+      let start = partitionStart.value.trim();
+      let end = partitionEnd.value.trim();
+
+      // Usar valores predeterminados si están vacíos
+      if (!start) start = '0%';
+      if (!end) end = '100%';
+
+      // Validar que inicio sea menor que fin (solo si ambos son porcentajes)
+      if (start.includes('%') && end.includes('%')) {
+        const startNum = parseInt(start.replace('%', ''));
+        const endNum = parseInt(end.replace('%', ''));
+        if (isNaN(startNum) || isNaN(endNum) || startNum >= endNum) {
+          appendLog('El inicio debe ser menor que el fin.', 'error');
+          setStatus('Error', 'error');
+          hideProgress();
+          hideCancelButton();
+          createPartitionBtn.disabled = false;
+          deletePartitionBtn.disabled = false;
+          return;
+        }
+      }
+
+      result = await window.usbAPI.createPartition(device, tableType, start, end, password);
+    }
+
     appendLog(result.output, result.success ? 'ok' : 'error');
     setStatus(result.success ? 'Partición creada' : 'Error', result.success ? 'ok' : 'error');
     if (result.success) {
