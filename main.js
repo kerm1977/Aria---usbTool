@@ -331,6 +331,12 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
       // Intentar formatear el dispositivo completo en lugar de la partición
       const baseDevice = partition.replace(/\d+$/, ''); // sdc1 -> sdc
       
+      // Verificar que el medio esté presente
+      const sizeCheck = await runShell(`blockdev --getsize64 /dev/${baseDevice}`, 3000);
+      if (sizeCheck.code !== 0 || !sizeCheck.stdout || parseInt(sizeCheck.stdout) === 0) {
+        return { success: false, output: `No se detecta medio en /dev/${baseDevice}. Verifica que la tarjeta SD esté insertada correctamente en el lector.` };
+      }
+      
       // Limpiar dispositivo completo
       const ddFull = await runShellWithPassword(`dd if=/dev/zero of=/dev/${baseDevice} bs=1M count=1 conv=fdatasync`, password, 15000);
       
