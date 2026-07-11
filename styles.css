@@ -317,6 +317,20 @@ button.action-btn.small {
   display: none !important;
 }
 
+#panel-particionar .glass-card {
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+#panel-particionar .form-row {
+  flex-wrap: nowrap;
+}
+
+#panel-particionar input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+}
+
 @media (max-width: 800px) {
   .container {
     flex-direction: column;
@@ -346,6 +360,9 @@ button.action-btn.small {
     min-width: auto;
   }
   .radio-group {
+    flex-wrap: wrap;
+  }
+  #panel-particionar .form-row {
     flex-wrap: wrap;
   }
 }

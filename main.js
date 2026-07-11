@@ -474,11 +474,11 @@ ipcMain.handle('create-partition', async (event, device, tableType, start, end, 
     // Desmontar el dispositivo primero
     const umount = await runShellWithPassword(`umount /dev/${device}*`, password, 10000);
     
-    // Crear tabla de particiones
-    const mklabel = await runShellWithPassword(`parted /dev/${device} mklabel ${tableType}`, password, 10000);
+    // Crear tabla de particiones con flag -s (script, no interactivo)
+    const mklabel = await runShellWithPassword(`parted -s /dev/${device} mklabel ${tableType}`, password, 10000);
     
-    // Crear partición
-    const mkpart = await runShellWithPassword(`parted /dev/${device} mkpart primary ${start} ${end}`, password, 10000);
+    // Crear partición con flag -s (script, no interactivo)
+    const mkpart = await runShellWithPassword(`parted -s /dev/${device} mkpart primary ${start} ${end}`, password, 10000);
     
     return { success: true, output: (mklabel.stdout || '') + (mkpart.stdout || '') + (mklabel.stderr || '') + (mkpart.stderr || '') };
   } catch (e) {
@@ -491,8 +491,8 @@ ipcMain.handle('delete-partition', async (event, device, partitionNumber, passwo
     // Desmontar la partición primero
     const umount = await runShellWithPassword(`umount /dev/${device}${partitionNumber}`, password, 10000);
     
-    // Eliminar partición
-    const rm = await runShellWithPassword(`parted /dev/${device} rm ${partitionNumber}`, password, 10000);
+    // Eliminar partición con flag -s (script, no interactivo)
+    const rm = await runShellWithPassword(`parted -s /dev/${device} rm ${partitionNumber}`, password, 10000);
     
     return { success: true, output: (umount.stdout || '') + (rm.stdout || '') + (umount.stderr || '') + (rm.stderr || '') };
   } catch (e) {

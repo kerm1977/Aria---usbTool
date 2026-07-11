@@ -535,6 +535,17 @@ createPartitionBtn.addEventListener('click', async () => {
     return;
   }
 
+  // Validar que inicio sea menor que fin
+  if (start.includes('%') && end.includes('%')) {
+    const startNum = parseInt(start);
+    const endNum = parseInt(end);
+    if (startNum >= endNum) {
+      appendLog('El inicio debe ser menor que el fin.', 'error');
+      setStatus('Error', 'error');
+      return;
+    }
+  }
+
   setStatus('Creando partición...', 'warn');
   showProgress();
   showCancelButton();
