@@ -10,6 +10,11 @@ const formatBtn = document.getElementById('formatBtn');
 const volumeLabel = document.getElementById('volumeLabel');
 const sudoPassword = document.getElementById('sudoPassword');
 
+// Convertir etiqueta a mayúsculas mientras el usuario escribe
+volumeLabel.addEventListener('input', (e) => {
+  e.target.value = e.target.value.toUpperCase();
+});
+
 let devices = [];
 let selected = null;
 let lastDeviceCount = 0;
