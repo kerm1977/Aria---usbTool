@@ -19,5 +19,5 @@ contextBridge.exposeInMainWorld('usbAPI', {
   findLargeFiles: (mountpoint) => ipcRenderer.invoke('find-large-files', mountpoint),
   deletePath: (path, password) => ipcRenderer.invoke('delete-path', path, password),
   openPath: (path) => ipcRenderer.invoke('open-path', path),
-  getDiskSpace: (device) => ipcRenderer.invoke('get-disk-space', device)
+  getDiskSpace: (mountpoint) => ipcRenderer.invoke('get-disk-space', mountpoint)
 });

@@ -723,10 +723,13 @@ ipcMain.handle('open-path', async (event, path) => {
   }
 });
 
-ipcMain.handle('get-disk-space', async (event, device) => {
+ipcMain.handle('get-disk-space', async (event, mountpoint) => {
   try {
-    const devicePath = device.startsWith('/dev/') ? device : `/dev/${device}`;
-    const cmd = `df -h "${devicePath}" 2>/dev/null | tail -n 1`;
+    if (!mountpoint || mountpoint === 'no montado' || mountpoint === null) {
+      return { success: false, output: 'El dispositivo no está montado.' };
+    }
+
+    const cmd = `df -h "${mountpoint}" 2>/dev/null | tail -n 1`;
     const result = await runShell(cmd, 10000);
     
     if (result.code !== 0) {

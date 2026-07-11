@@ -233,13 +233,16 @@ const updateSpaceBar = async (device) => {
   }
   
   try {
-    // Use the device name (if it's a partition, use the parent device)
-    let deviceName = device.name.replace('/dev/', '');
-    if (device.type === 'partition' && device.parentDevice) {
-      deviceName = device.parentDevice;
+    // Get the mountpoint for the selected device
+    const part = device.children && device.children.length > 0 ? device.children[0] : device;
+    const mountpoint = getMountpoint(part);
+    
+    if (!mountpoint || mountpoint === 'no montado' || mountpoint === null) {
+      spaceBarContainer.classList.add('hidden');
+      return;
     }
     
-    const result = await window.usbAPI.getDiskSpace(deviceName);
+    const result = await window.usbAPI.getDiskSpace(mountpoint);
     
     if (result.success) {
       spaceBarContainer.classList.remove('hidden');
