@@ -282,10 +282,12 @@ ipcMain.handle('format-device', async (event, partition, fsType, label) => {
     let cmd;
     if (fsType === 'fat32') {
       cmd = `mkfs.vfat -F 32 -n ${safeLabel} /dev/${partition}`;
+    } else if (fsType === 'exfat') {
+      cmd = `mkfs.exfat -n ${safeLabel} /dev/${partition}`;
     } else if (fsType === 'ntfs') {
       cmd = `mkfs.ntfs -f -L ${safeLabel} /dev/${partition}`;
     } else {
-      return { success: false, output: 'Formato no soportado. Use fat32 o ntfs.' };
+      return { success: false, output: 'Formato no soportado. Use fat32, exfat o ntfs.' };
     }
     const result = await runShell(cmd, 60000);
     return { success: true, output: (result.stdout || '') + (result.stderr || '') };
@@ -309,5 +311,22 @@ ipcMain.handle('cancel-operations', async () => {
     return { success: true, output: `Canceladas ${killed} operaciones.` };
   } catch (e) {
     return { success: false, output: e.message || e.toString() };
+  }
+});
+
+ipcMain.handle('mount-device', async (event, partition) => {
+  try {
+    const mountPoint = `/media/${process.env.USER || 'pmint'}/${partition}`;
+    const mkdir = await runShell(`mkdir -p ${mountPoint}`, 5000);
+    if (mkdir.code !== 0) {
+      return { success: false, output: `Error creando punto de montaje: ${mkdir.stderr}` };
+    }
+    const mount = await runShell(`mount /dev/${partition} ${mountPoint}`, 10000);
+    if (mount.code === 0) {
+      return { success: true, output: `Montado en ${mountPoint}\n${mount.stdout || ''}` };
+    }
+    return { success: false, output: mount.stderr || mount.stdout || 'Error al montar' };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
   }
 });

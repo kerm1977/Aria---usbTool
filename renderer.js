@@ -5,6 +5,7 @@ const log = document.getElementById('log');
 const statusText = document.getElementById('statusText');
 const killBtn = document.getElementById('killBtn');
 const ejectBtn = document.getElementById('ejectBtn');
+const mountBtn = document.getElementById('mountBtn');
 const analyzeBtn = document.getElementById('analyzeBtn');
 const repairBtn = document.getElementById('repairBtn');
 const formatBtn = document.getElementById('formatBtn');
@@ -205,6 +206,29 @@ ejectBtn.addEventListener('click', async () => {
     setStatus('Error', 'error');
   } finally {
     ejectBtn.disabled = false;
+  }
+});
+
+mountBtn.addEventListener('click', async () => {
+  const partition = getSelectedPartition();
+  if (!partition) {
+    appendLog('Selecciona una unidad primero.', 'error');
+    return;
+  }
+  clearLog();
+  appendLog(`Montando /dev/${partition}...`);
+  setStatus('Montando...');
+  mountBtn.disabled = true;
+  try {
+    const result = await window.usbAPI.mountDevice(partition);
+    appendLog(result.output, result.success ? 'ok' : 'error');
+    setStatus(result.success ? 'Montado' : 'Error', result.success ? 'ok' : 'error');
+    await loadDevices();
+  } catch (e) {
+    appendLog(`Error: ${e.message}`, 'error');
+    setStatus('Error', 'error');
+  } finally {
+    mountBtn.disabled = false;
   }
 });
 
