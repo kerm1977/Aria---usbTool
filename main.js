@@ -261,8 +261,11 @@ ipcMain.handle('analyze-device', async (event, partition, fsType, mountpoint) =>
 ipcMain.handle('repair-device', async (event, partition, fsType) => {
   try {
     let result;
-    if (fsType && fsType.toLowerCase().includes('ntfs')) {
+    const lower = (fsType || '').toLowerCase();
+    if (lower.includes('ntfs')) {
       result = await runShell(`ntfsfix /dev/${partition}`, 60000);
+    } else if (lower.includes('exfat')) {
+      result = await runShell(`fsck.exfat -y /dev/${partition}`, 60000);
     } else {
       result = await runShell(`fsck -y /dev/${partition}`, 60000);
     }
