@@ -328,7 +328,30 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
     // Verificar estado de solo lectura del dispositivo
     const roCheck = await runShell(`blockdev --getro /dev/${partition}`, 3000);
     if (roCheck.stdout && roCheck.stdout.trim() === '1') {
-      return { success: false, output: `El dispositivo /dev/${partition} está marcado como solo lectura a nivel de bloque. Verifica si tiene un switch de protección física o desconecta y reconecta el USB.` };
+      // Intentar formatear el dispositivo completo en lugar de la partición
+      const baseDevice = partition.replace(/\d+$/, ''); // sdc1 -> sdc
+      
+      // Limpiar dispositivo completo
+      const ddFull = await runShellWithPassword(`dd if=/dev/zero of=/dev/${baseDevice} bs=1M count=1 conv=fdatasync`, password, 15000);
+      
+      // Desbloquear dispositivo completo
+      await runShellWithPassword(`blockdev --setrw /dev/${baseDevice}`, password, 5000);
+      await runShellWithPassword(`hdparm -r0 /dev/${baseDevice}`, password, 5000);
+      
+      // Usar dispositivo completo para formateo
+      const safeLabel = (label || 'USB').replace(/[^a-zA-Z0-9_-]/g, '').toUpperCase().slice(0, 11);
+      let cmd;
+      if (fsType === 'fat32') {
+        cmd = `mkfs.vfat -F 32 -n ${safeLabel} -I /dev/${baseDevice}`;
+      } else if (fsType === 'exfat') {
+        cmd = `mkfs.exfat -n ${safeLabel} /dev/${baseDevice}`;
+      } else if (fsType === 'ntfs') {
+        cmd = `mkfs.ntfs -f -L ${safeLabel} /dev/${baseDevice}`;
+      } else {
+        return { success: false, output: 'Formato no soportado. Use fat32, exfat o ntfs.' };
+      }
+      const result = await runShellWithPassword(cmd, password, 60000);
+      return { success: true, output: `Formateado dispositivo completo /dev/${baseDevice}\n` + (result.stdout || '') + (result.stderr || '') };
     }
     
     // Limpiar firmas de filesystem existentes
