@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="usbGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E7D32;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="metalGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#B0BEC5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#78909C;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#ECEFF1" />
+  
+  <!-- USB connector body -->
+  <rect x="180" y="80" width="152" height="120" rx="12" fill="url(#usbGradient)" />
+  
+  <!-- USB connector metal part -->
+  <rect x="200" y="180" width="112" height="40" rx="4" fill="url(#metalGradient)" />
+  
+  <!-- USB connector inner details -->
+  <rect x="210" y="190" width="92" height="20" rx="2" fill="#455A64" />
+  
+  <!-- USB logo symbol -->
+  <circle cx="256" cy="140" r="30" fill="#FFFFFF" opacity="0.9" />
+  <path d="M242 140 L256 125 L270 140 L256 155 Z" fill="#2E7D32" />
+  <circle cx="256" cy="140" r="8" fill="#1B5E20" />
+  
+  <!-- USB cable/flash drive body -->
+  <rect x="160" y="200" width="192" height="180" rx="16" fill="url(#usbGradient)" />
+  
+  <!-- Flash drive metal trim -->
+  <rect x="170" y="210" width="172" height="160" rx="12" fill="#43A047" />
+  
+  <!-- Flash drive inner body -->
+  <rect x="180" y="220" width="152" height="140" rx="8" fill="#66BB6A" />
+  
+  <!-- USB activity LED -->
+  <circle cx="256" cy="290" r="12" fill="#FFEB3B" />
+  <circle cx="256" cy="290" r="6" fill="#FFC107" />
+  
+  <!-- USB port symbol -->
+  <rect x="236" y="340" width="40" height="12" rx="2" fill="#1B5E20" />
+  
+  <!-- Highlight/shine effect -->
+  <ellipse cx="220" cy="240" rx="30" ry="15" fill="#FFFFFF" opacity="0.3" transform="rotate(-30 220 240)" />
+</svg>

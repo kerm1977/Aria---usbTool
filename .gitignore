@@ -15,6 +15,9 @@ out/
 # Electron
 *.asar
 
+# Icons (SVG is source)
+icon.png
+
 # OS
 .DS_Store
 Thumbs.db
