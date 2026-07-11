@@ -335,6 +335,13 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
     const wipefs = await runShellWithPassword(`wipefs -a /dev/${partition}`, password, 10000);
     // Ignorar error si no hay firmas
     
+    // Limpiar MBR y tabla de particiones (primer 1MB) para eliminar bloqueos de GoPro
+    const dd = await runShellWithPassword(`dd if=/dev/zero of=/dev/${partition} bs=1M count=1 conv=fdatasync`, password, 15000);
+    // Ignorar error si falla, pero intentarlo
+    
+    // Esperar a que la escritura se complete
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     // Habilitar modo escritura en el dispositivo de bloque
     const blockdev = await runShellWithPassword(`blockdev --setrw /dev/${partition}`, password, 5000);
     // Ignorar error si no es necesario
