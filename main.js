@@ -154,6 +154,24 @@ ipcMain.handle('list-usb-devices', async () => {
       return (isRemovable || hasUsbModel) && realSize;
     });
     
+    // Agregar particiones hijas individualmente
+    const partitionDevices = [];
+    blockDevices.forEach(device => {
+      if (device.children && device.children.length > 0) {
+        device.children.forEach(child => {
+          partitionDevices.push({
+            ...child,
+            type: 'partition',
+            parentDevice: device.name,
+            usbInfo: usbHardware.find(h => 
+              h.description.toLowerCase().includes((device.model || '').toLowerCase()) ||
+              h.description.toLowerCase().includes('usb')
+            ) || null
+          });
+        });
+      }
+    });
+    
     const usbDevices = blockDevices.map(d => ({
       ...d,
       type: 'block',
@@ -162,6 +180,11 @@ ipcMain.handle('list-usb-devices', async () => {
         h.description.toLowerCase().includes('usb')
       ) || null
     }));
+    
+    // Agregar particiones a la lista
+    partitionDevices.forEach(p => {
+      usbDevices.push(p);
+    });
     
     const usbOnly = usbHardware.filter(h => 
       h.description.toLowerCase().includes('storage') ||
