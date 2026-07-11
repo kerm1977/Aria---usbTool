@@ -316,16 +316,26 @@ ipcMain.handle('cancel-operations', async () => {
 
 ipcMain.handle('mount-device', async (event, partition) => {
   try {
+    const devicePath = `/dev/${partition}`;
+    
+    // Intentar con udisksctl primero (más robusto)
+    const udisks = await runShellAsUser(`udisksctl mount -b ${devicePath}`, 10000);
+    if (udisks.code === 0) {
+      return { success: true, output: udisks.stdout || 'Montado con udisksctl' };
+    }
+    
+    // Fallback: mount directo
     const mountPoint = `/media/${process.env.USER || 'pmint'}/${partition}`;
     const mkdir = await runShell(`mkdir -p ${mountPoint}`, 5000);
     if (mkdir.code !== 0) {
       return { success: false, output: `Error creando punto de montaje: ${mkdir.stderr}` };
     }
-    const mount = await runShell(`mount /dev/${partition} ${mountPoint}`, 10000);
+    const mount = await runShell(`mount ${devicePath} ${mountPoint}`, 10000);
     if (mount.code === 0) {
       return { success: true, output: `Montado en ${mountPoint}\n${mount.stdout || ''}` };
     }
-    return { success: false, output: mount.stderr || mount.stdout || 'Error al montar' };
+    
+    return { success: false, output: `udisksctl: ${udisks.stderr}\nmount: ${mount.stderr || mount.stdout}` };
   } catch (e) {
     return { success: false, output: (e.stdout || '') + (e.stderr || '') };
   }
