@@ -525,8 +525,8 @@ createPartitionBtn.addEventListener('click', async () => {
 
   const device = selected.name.replace('/dev/', '');
   const tableType = document.querySelector('input[name="partitionTable"]:checked').value;
-  const start = partitionStart.value || '0%';
-  const end = partitionEnd.value || '100%';
+  let start = partitionStart.value.trim();
+  let end = partitionEnd.value.trim();
   const password = partitionPasswordInput.value;
 
   if (!password) {
@@ -535,11 +535,15 @@ createPartitionBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Validar que inicio sea menor que fin
+  // Usar valores predeterminados si están vacíos
+  if (!start) start = '0%';
+  if (!end) end = '100%';
+
+  // Validar que inicio sea menor que fin (solo si ambos son porcentajes)
   if (start.includes('%') && end.includes('%')) {
-    const startNum = parseInt(start);
-    const endNum = parseInt(end);
-    if (startNum >= endNum) {
+    const startNum = parseInt(start.replace('%', ''));
+    const endNum = parseInt(end.replace('%', ''));
+    if (isNaN(startNum) || isNaN(endNum) || startNum >= endNum) {
       appendLog('El inicio debe ser menor que el fin.', 'error');
       setStatus('Error', 'error');
       return;
