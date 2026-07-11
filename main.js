@@ -338,20 +338,28 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
       await runShellWithPassword(`blockdev --setrw /dev/${baseDevice}`, password, 5000);
       await runShellWithPassword(`hdparm -r0 /dev/${baseDevice}`, password, 5000);
       
-      // Usar dispositivo completo para formateo
+      // Crear tabla de particiones GPT y partición
+      await runShellWithPassword(`parted /dev/${baseDevice} mklabel gpt`, password, 10000);
+      await runShellWithPassword(`parted /dev/${baseDevice} mkpart primary 0% 100%`, password, 10000);
+      
+      // Esperar a que se cree la partición
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Usar la primera partición para formateo
+      const newPartition = `${baseDevice}1`;
       const safeLabel = (label || 'USB').replace(/[^a-zA-Z0-9_-]/g, '').toUpperCase().slice(0, 11);
       let cmd;
       if (fsType === 'fat32') {
-        cmd = `mkfs.vfat -F 32 -n ${safeLabel} -I /dev/${baseDevice}`;
+        cmd = `mkfs.vfat -F 32 -n ${safeLabel} /dev/${newPartition}`;
       } else if (fsType === 'exfat') {
-        cmd = `mkfs.exfat -n ${safeLabel} /dev/${baseDevice}`;
+        cmd = `mkfs.exfat -n ${safeLabel} /dev/${newPartition}`;
       } else if (fsType === 'ntfs') {
-        cmd = `mkfs.ntfs -f -L ${safeLabel} /dev/${baseDevice}`;
+        cmd = `mkfs.ntfs -f -L ${safeLabel} /dev/${newPartition}`;
       } else {
         return { success: false, output: 'Formato no soportado. Use fat32, exfat o ntfs.' };
       }
       const result = await runShellWithPassword(cmd, password, 60000);
-      return { success: true, output: `Formateado dispositivo completo /dev/${baseDevice}\n` + (result.stdout || '') + (result.stderr || '') };
+      return { success: true, output: `Creada partición /dev/${newPartition} y formateada\n` + (result.stdout || '') + (result.stderr || '') };
     }
     
     // Limpiar firmas de filesystem existentes
