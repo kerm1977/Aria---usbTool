@@ -316,6 +316,15 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
     const umount = await runShellWithPassword(`umount -f /dev/${partition}`, password, 10000);
     // Ignorar error si ya estaba desmontado
     
+    // Esperar a que el desmontaje se complete
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Verificar que no esté montado
+    const mountCheck = await runShell(`mount | grep /dev/${partition}`, 3000);
+    if (mountCheck.code === 0) {
+      return { success: false, output: `El dispositivo /dev/${partition} todavía está montado. Desmóntalo manualmente primero.\n${mountCheck.stdout}` };
+    }
+    
     // Habilitar modo escritura en el dispositivo de bloque
     const blockdev = await runShellWithPassword(`blockdev --setrw /dev/${partition}`, password, 5000);
     // Ignorar error si no es necesario
