@@ -86,6 +86,7 @@ body {
   flex-direction: column;
   gap: 20px;
   overflow: hidden;
+  min-height: 0;
 }
 
 .glass-card {
@@ -95,6 +96,7 @@ body {
   border-radius: 20px;
   padding: 25px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
 }
 
 .header-card {
@@ -174,6 +176,7 @@ button.action-btn.danger:hover {
   gap: 20px;
   flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 .panel.active {
@@ -218,6 +221,7 @@ button.action-btn.danger:hover {
   border: 1px solid rgba(255, 255, 255, 0.08);
   user-select: text;
   -webkit-user-select: text;
+  min-height: 0;
 }
 
 .log-area .ok { color: #2ecc71; }
@@ -293,6 +297,7 @@ button.action-btn.danger:hover {
     flex-direction: row;
     flex-wrap: wrap;
     padding: 15px;
+    flex-shrink: 0;
   }
   .nav-btn {
     flex: 1;
@@ -300,5 +305,49 @@ button.action-btn.danger:hover {
   }
   .main-content {
     padding: 15px;
+  }
+  .glass-card {
+    padding: 15px;
+  }
+  .form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .form-row label {
+    min-width: auto;
+  }
+  .radio-group {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    padding: 10px;
+    gap: 10px;
+  }
+  .brand h1 {
+    font-size: 1.1rem;
+  }
+  .main-content {
+    padding: 10px;
+    gap: 15px;
+  }
+  .glass-card {
+    padding: 12px;
+  }
+  .header-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .device-selector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  select, input[type="text"] {
+    min-width: 100%;
+  }
+  button.action-btn {
+    width: 100%;
   }
 }
