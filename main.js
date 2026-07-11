@@ -277,6 +277,13 @@ ipcMain.handle('analyze-device', async (event, partition, fsType, mountpoint) =>
 
 ipcMain.handle('repair-device', async (event, partition, fsType) => {
   try {
+    const lower = (fsType || '').toLowerCase();
+    
+    // ISO9660 es un filesystem de solo lectura, no se puede reparar
+    if (lower.includes('iso9660')) {
+      return { success: false, output: 'ISO9660 es un filesystem de solo lectura (CD/DVD/ISO). No se puede reparar.' };
+    }
+    
     // Matar procesos que usan el dispositivo
     const fuser = await runShell(`fuser -km /dev/${partition}`, 10000);
     // Ignorar error si no hay procesos
@@ -286,7 +293,6 @@ ipcMain.handle('repair-device', async (event, partition, fsType) => {
     // Ignorar error si ya estaba desmontado
     
     let result;
-    const lower = (fsType || '').toLowerCase();
     if (lower.includes('ntfs')) {
       result = await runShell(`ntfsfix /dev/${partition}`, 60000);
     } else if (lower.includes('exfat')) {
