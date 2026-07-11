@@ -312,7 +312,7 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
     const umount = await runShell(`umount /dev/${partition}`, 10000);
     // Ignorar error si ya estaba desmontado
     
-    const safeLabel = (label || 'USB').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 11);
+    const safeLabel = (label || 'USB').replace(/[^a-zA-Z0-9_-]/g, '').toUpperCase().slice(0, 11);
     let cmd;
     if (fsType === 'fat32') {
       cmd = `mkfs.vfat -F 32 -n ${safeLabel} /dev/${partition}`;
