@@ -48,6 +48,21 @@
             <button class="action-btn" id="mountBtn">📂 MONTAR UNIDAD</button>
           </div>
         </div>
+        <section class="glass-card log-card">
+          <div class="status-bar">
+            <span>Consola de operaciones</span>
+            <div>
+              <button id="cancelBtn" class="action-btn danger" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px; display: none;">⏹️ Cancelar</button>
+              <button id="copyLogsBtn" class="action-btn secondary" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px;">📋 Copiar logs</button>
+              <span id="statusText">Listo</span>
+            </div>
+          </div>
+          <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-text" id="progressText">0%</div>
+          </div>
+          <div id="log" class="log-area">> Selecciona una unidad USB y una acción.</div>
+        </section>
       </section>
 
       <section id="panel-analizar" class="panel">
@@ -58,6 +73,21 @@
             <button class="action-btn" id="analyzeBtn">🔍 ANALIZAR AHORA</button>
           </div>
         </div>
+        <section class="glass-card log-card">
+          <div class="status-bar">
+            <span>Consola de operaciones</span>
+            <div>
+              <button id="cancelBtn" class="action-btn danger" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px; display: none;">⏹️ Cancelar</button>
+              <button id="copyLogsBtn" class="action-btn secondary" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px;">📋 Copiar logs</button>
+              <span id="statusText">Listo</span>
+            </div>
+          </div>
+          <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-text" id="progressText">0%</div>
+          </div>
+          <div id="log" class="log-area">> Selecciona una unidad USB y una acción.</div>
+        </section>
       </section>
 
       <section id="panel-reparar" class="panel">
@@ -68,6 +98,21 @@
             <button class="action-btn" id="repairBtn">🛠️ REPARAR UNIDAD</button>
           </div>
         </div>
+        <section class="glass-card log-card">
+          <div class="status-bar">
+            <span>Consola de operaciones</span>
+            <div>
+              <button id="cancelBtn" class="action-btn danger" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px; display: none;">⏹️ Cancelar</button>
+              <button id="copyLogsBtn" class="action-btn secondary" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px;">📋 Copiar logs</button>
+              <span id="statusText">Listo</span>
+            </div>
+          </div>
+          <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-text" id="progressText">0%</div>
+          </div>
+          <div id="log" class="log-area">> Selecciona una unidad USB y una acción.</div>
+        </section>
       </section>
 
       <section id="panel-formatear" class="panel">
@@ -90,22 +135,21 @@
             <button class="action-btn danger" id="formatBtn">⚠️ FORMATEAR UNIDAD</button>
           </div>
         </div>
-      </section>
-
-      <section class="glass-card" style="flex: 1; display: flex; flex-direction: column;">
-        <div class="status-bar">
-          <span>Consola de operaciones</span>
-          <div>
-            <button id="cancelBtn" class="action-btn danger" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px; display: none;">⏹️ Cancelar</button>
-            <button id="copyLogsBtn" class="action-btn secondary" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px;">📋 Copiar logs</button>
-            <span id="statusText">Listo</span>
+        <section class="glass-card log-card">
+          <div class="status-bar">
+            <span>Consola de operaciones</span>
+            <div>
+              <button id="cancelBtn" class="action-btn danger" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px; display: none;">⏹️ Cancelar</button>
+              <button id="copyLogsBtn" class="action-btn secondary" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px;">📋 Copiar logs</button>
+              <span id="statusText">Listo</span>
+            </div>
           </div>
-        </div>
-        <div class="progress-container" id="progressContainer" style="display: none;">
-          <div class="progress-bar" id="progressBar"></div>
-          <div class="progress-text" id="progressText">0%</div>
-        </div>
-        <div id="log" class="log-area">> Selecciona una unidad USB y una acción.</div>
+          <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-text" id="progressText">0%</div>
+          </div>
+          <div id="log" class="log-area">> Selecciona una unidad USB y una acción.</div>
+        </section>
       </section>
     </main>
   </div>

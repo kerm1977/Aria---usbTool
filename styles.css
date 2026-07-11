@@ -228,6 +228,14 @@ button.action-btn.danger:hover {
 .log-area .error { color: #e74c3c; }
 .log-area .warn { color: #f1c40f; }
 
+.log-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .progress-container {
   margin-bottom: 10px;
   background: rgba(0, 0, 0, 0.3);
