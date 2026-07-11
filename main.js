@@ -325,6 +325,16 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
       return { success: false, output: `El dispositivo /dev/${partition} todavía está montado. Desmóntalo manualmente primero.\n${mountCheck.stdout}` };
     }
     
+    // Verificar estado de solo lectura del dispositivo
+    const roCheck = await runShell(`blockdev --getro /dev/${partition}`, 3000);
+    if (roCheck.stdout && roCheck.stdout.trim() === '1') {
+      return { success: false, output: `El dispositivo /dev/${partition} está marcado como solo lectura a nivel de bloque. Verifica si tiene un switch de protección física o desconecta y reconecta el USB.` };
+    }
+    
+    // Limpiar firmas de filesystem existentes
+    const wipefs = await runShellWithPassword(`wipefs -a /dev/${partition}`, password, 10000);
+    // Ignorar error si no hay firmas
+    
     // Habilitar modo escritura en el dispositivo de bloque
     const blockdev = await runShellWithPassword(`blockdev --setrw /dev/${partition}`, password, 5000);
     // Ignorar error si no es necesario
