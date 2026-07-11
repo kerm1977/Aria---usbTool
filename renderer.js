@@ -13,6 +13,7 @@ const sudoPassword = document.getElementById('sudoPassword');
 let devices = [];
 let selected = null;
 let lastDeviceCount = 0;
+let lastDeviceNames = '';
 let autoRefreshInterval = null;
 
 function getActivePanel() {
@@ -126,26 +127,34 @@ function getSelectedFsType() {
 }
 
 async function loadDevices(forceRefresh = false) {
-  setStatus('Cargando dispositivos...');
-  deviceSelect.innerHTML = '<option value="">Cargando...</option>';
-  deviceInfo.textContent = 'Ningún dispositivo detectado';
   try {
     const result = await window.usbAPI.listDevices();
     if (!result.success) {
-      appendLog(`Error: ${result.error}`, 'error');
-      setStatus('Error al listar', 'error');
+      if (forceRefresh) {
+        appendLog(`Error: ${result.error}`, 'error');
+        setStatus('Error al listar', 'error');
+      }
       return;
     }
     const newDevices = result.devices || [];
     const currentCount = newDevices.length;
     
-    // Detectar cambios en la cantidad de dispositivos (solo en auto-refresh)
-    if (!forceRefresh && currentCount === lastDeviceCount) {
+    // Generar hash de nombres de dispositivos para comparar
+    const currentNames = newDevices.map(d => `${d.name}-${d.model}-${d.size}`).join('|');
+    
+    // Detectar cambios en la cantidad o nombres de dispositivos (solo en auto-refresh)
+    if (!forceRefresh && currentCount === lastDeviceCount && currentNames === lastDeviceNames) {
       return; // No hay cambios, no actualizar UI
     }
     
     lastDeviceCount = currentCount;
+    lastDeviceNames = currentNames;
     devices = newDevices;
+    
+    setStatus('Cargando dispositivos...');
+    deviceSelect.innerHTML = '<option value="">Cargando...</option>';
+    deviceInfo.textContent = 'Ningún dispositivo detectado';
+    
     deviceSelect.innerHTML = '';
     if (devices.length === 0) {
       deviceSelect.innerHTML = '<option value="">No se encontraron USB</option>';
@@ -162,8 +171,10 @@ async function loadDevices(forceRefresh = false) {
     onDeviceChanged();
     setStatus('Listo', 'ok');
   } catch (e) {
-    appendLog(`Error inesperado: ${e.message}`, 'error');
-    setStatus('Error', 'error');
+    if (forceRefresh) {
+      appendLog(`Error inesperado: ${e.message}`, 'error');
+      setStatus('Error', 'error');
+    }
   }
 }
 
