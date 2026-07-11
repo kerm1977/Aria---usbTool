@@ -627,6 +627,102 @@ ipcMain.handle('analyze-content', async (event, mountpoint) => {
   }
 });
 
+ipcMain.handle('find-empty-folders', async (event, mountpoint) => {
+  try {
+    if (!mountpoint || mountpoint === 'no montado' || mountpoint === null) {
+      return { success: false, output: 'El dispositivo no está montado.' };
+    }
+
+    const cmd = `find "${mountpoint}" -type d -empty 2>/dev/null`;
+    const result = await runShell(cmd, 30000);
+    
+    if (result.code !== 0) {
+      return { success: false, output: result.stderr || 'Error buscando carpetas vacías' };
+    }
+
+    const folders = result.stdout.trim().split('\n').filter(f => f);
+    return { success: true, folders };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
+ipcMain.handle('find-duplicate-files', async (event, mountpoint) => {
+  try {
+    if (!mountpoint || mountpoint === 'no montado' || mountpoint === null) {
+      return { success: false, output: 'El dispositivo no está montado.' };
+    }
+
+    // Usar fdupes para encontrar duplicados (si está instalado)
+    const cmd = `fdupes -r "${mountpoint}" 2>/dev/null | head -n 100`;
+    const result = await runShell(cmd, 60000);
+    
+    if (result.code !== 0) {
+      // Fallback: buscar por tamaño y nombre
+      const cmd2 = `find "${mountpoint}" -type f -exec du {} \\; 2>/dev/null | sort -n | uniq -d -w 32`;
+      const result2 = await runShell(cmd2, 60000);
+      return { success: true, duplicates: result2.stdout.trim().split('\n').filter(f => f) };
+    }
+
+    const duplicates = result.stdout.trim().split('\n').filter(f => f);
+    return { success: true, duplicates };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
+ipcMain.handle('find-large-files', async (event, mountpoint) => {
+  try {
+    if (!mountpoint || mountpoint === 'no montado' || mountpoint === null) {
+      return { success: false, output: 'El dispositivo no está montado.' };
+    }
+
+    const cmd = `find "${mountpoint}" -type f -exec du -h {} \\; 2>/dev/null | sort -rh | head -n 20`;
+    const result = await runShell(cmd, 30000);
+    
+    if (result.code !== 0) {
+      return { success: false, output: result.stderr || 'Error buscando archivos grandes' };
+    }
+
+    const files = result.stdout.trim().split('\n').filter(f => f).map(line => {
+      const parts = line.trim().split('\t');
+      if (parts.length >= 2) {
+        return { size: parts[0], path: parts[1] };
+      }
+      return null;
+    }).filter(f => f);
+
+    return { success: true, files };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
+ipcMain.handle('delete-path', async (event, path, password) => {
+  try {
+    const cmd = `rm -rf "${path}"`;
+    const result = await runShellWithPassword(cmd, password, 30000);
+    
+    if (result.code !== 0) {
+      return { success: false, output: result.stderr || 'Error eliminando' };
+    }
+
+    return { success: true, output: `Eliminado: ${path}` };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
+ipcMain.handle('open-path', async (event, path) => {
+  try {
+    const { shell } = require('electron');
+    await shell.openPath(path);
+    return { success: true, output: `Abierto: ${path}` };
+  } catch (e) {
+    return { success: false, output: e.message || 'Error abriendo ruta' };
+  }
+});
+
 ipcMain.handle('mount-device', async (event, partition) => {
   try {
     const devicePath = `/dev/${partition}`;

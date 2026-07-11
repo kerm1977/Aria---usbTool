@@ -658,6 +658,10 @@ deletePartitionBtn.addEventListener('click', async () => {
 // Content analysis
 const analyzeContentBtn = document.getElementById('analyzeContentBtn');
 const contentStats = document.getElementById('contentStats');
+const advancedAnalysis = document.getElementById('advancedAnalysis');
+const findEmptyFoldersBtn = document.getElementById('findEmptyFoldersBtn');
+const findDuplicatesBtn = document.getElementById('findDuplicatesBtn');
+const findLargeFilesBtn = document.getElementById('findLargeFilesBtn');
 
 analyzeContentBtn.addEventListener('click', async () => {
   if (!selected) {
@@ -750,6 +754,7 @@ analyzeContentBtn.addEventListener('click', async () => {
       document.getElementById('totalCount').textContent = stats.total;
       
       contentStats.classList.remove('hidden');
+      advancedAnalysis.classList.remove('hidden');
       appendLog(`Análisis completado:\n- Videos: ${stats.videos}\n- Imágenes: ${stats.images}\n- Audios: ${stats.audio}\n- Documentos: ${stats.documents}\n- Otros: ${stats.other}\n- Total: ${stats.total}`, 'ok');
       setStatus('Análisis completado', 'ok');
     } else {
@@ -763,6 +768,154 @@ analyzeContentBtn.addEventListener('click', async () => {
     hideProgress();
     hideCancelButton();
     analyzeContentBtn.disabled = false;
+  }
+});
+
+// Función para mostrar lista de archivos con acciones
+const renderFileList = (container, items, type) => {
+  container.innerHTML = '';
+  
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div class="file-item" style="color: #bdc3c7;">No se encontraron resultados.</div>';
+    return;
+  }
+
+  items.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    
+    let path, size;
+    if (type === 'large') {
+      path = item.path;
+      size = item.size;
+    } else {
+      path = item;
+      size = '';
+    }
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'file-actions';
+
+    // Botón abrir
+    const openBtn = document.createElement('button');
+    openBtn.className = 'action-btn secondary small';
+    openBtn.textContent = 'Abrir';
+    openBtn.addEventListener('click', async () => {
+      try {
+        const result = await window.usbAPI.openPath(path);
+        appendLog(result.output, result.success ? 'ok' : 'error');
+      } catch (err) {
+        appendLog(`Error: ${err.message}`, 'error');
+      }
+    });
+    actionsDiv.appendChild(openBtn);
+
+    // Botón eliminar
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'action-btn danger small';
+    deleteBtn.textContent = 'Eliminar';
+    deleteBtn.addEventListener('click', async () => {
+      const password = prompt('Ingresa la contraseña del sistema para eliminar:');
+      if (!password) return;
+      
+      try {
+        const result = await window.usbAPI.deletePath(path, password);
+        appendLog(result.output, result.success ? 'ok' : 'error');
+        if (result.success) {
+          div.remove();
+        }
+      } catch (err) {
+        appendLog(`Error: ${err.message}`, 'error');
+      }
+    });
+    actionsDiv.appendChild(deleteBtn);
+
+    div.innerHTML = `
+      <span class="file-path">${path}</span>
+      ${size ? `<span class="file-size">${size}</span>` : ''}
+    `;
+    div.appendChild(actionsDiv);
+    container.appendChild(div);
+  });
+};
+
+// Buscar carpetas vacías
+findEmptyFoldersBtn.addEventListener('click', async () => {
+  if (!selected || !selected.mountpoint) {
+    appendLog('Selecciona y monta un dispositivo primero.', 'error');
+    return;
+  }
+
+  setStatus('Buscando carpetas vacías...', 'warn');
+  try {
+    const result = await window.usbAPI.findEmptyFolders(selected.mountpoint);
+    if (result.success) {
+      renderFileList(document.getElementById('emptyFoldersList'), result.folders, 'empty');
+      appendLog(`Encontradas ${result.folders.length} carpetas vacías.`, 'ok');
+      setStatus('Búsqueda completada', 'ok');
+    } else {
+      appendLog(result.output, 'error');
+      setStatus('Error', 'error');
+    }
+  } catch (err) {
+    appendLog(`Error: ${err.message}`, 'error');
+    setStatus('Error', 'error');
+  }
+});
+
+// Buscar archivos duplicados
+findDuplicatesBtn.addEventListener('click', async () => {
+  if (!selected || !selected.mountpoint) {
+    appendLog('Selecciona y monta un dispositivo primero.', 'error');
+    return;
+  }
+
+  setStatus('Buscando archivos duplicados...', 'warn');
+  try {
+    const result = await window.usbAPI.findDuplicateFiles(selected.mountpoint);
+    if (result.success) {
+      const duplicates = result.duplicates.map(d => ({ path: d, size: '' }));
+      renderFileList(document.getElementById('duplicatesList'), duplicates, 'duplicates');
+      appendLog(`Encontrados ${result.duplicates.length} archivos duplicados.`, 'ok');
+      setStatus('Búsqueda completada', 'ok');
+    } else {
+      appendLog(result.output, 'error');
+      setStatus('Error', 'error');
+    }
+  } catch (err) {
+    appendLog(`Error: ${err.message}`, 'error');
+    setStatus('Error', 'error');
+  }
+});
+
+// Buscar archivos grandes
+findLargeFilesBtn.addEventListener('click', async () => {
+  if (!selected || !selected.mountpoint) {
+    appendLog('Selecciona y monta un dispositivo primero.', 'error');
+    return;
+  }
+
+  setStatus('Buscando archivos grandes...', 'warn');
+  try {
+    const result = await window.usbAPI.findLargeFiles(selected.mountpoint);
+    if (result.success) {
+      renderFileList(document.getElementById('largeFilesList'), result.files, 'large');
+      appendLog(`Encontrados ${result.files.length} archivos grandes.`, 'ok');
+      setStatus('Búsqueda completada', 'ok');
+      
+      // Abrir el archivo más grande automáticamente
+      if (result.files.length > 0) {
+        const largestFile = result.files[0];
+        appendLog(`Abriendo el archivo más grande: ${largestFile.path}`, 'warn');
+        await window.usbAPI.openPath(largestFile.path);
+      }
+    } else {
+      appendLog(result.output, 'error');
+      setStatus('Error', 'error');
+    }
+  } catch (err) {
+    appendLog(`Error: ${err.message}`, 'error');
+    setStatus('Error', 'error');
   }
 });
 

@@ -428,6 +428,80 @@ button.action-btn.small {
   color: #f1c40f;
 }
 
+.advanced-analysis {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-title {
+  font-size: 1rem;
+  color: #f1c40f;
+  margin-bottom: 15px;
+}
+
+.analysis-section {
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.section-header h5 {
+  font-size: 0.9rem;
+  color: #dfe6e9;
+  margin: 0;
+}
+
+.file-list {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+}
+
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-path {
+  color: #dfe6e9;
+  word-break: break-all;
+  flex: 1;
+  margin-right: 10px;
+}
+
+.file-size {
+  color: #bdc3c7;
+  font-size: 0.8rem;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.file-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.file-actions button {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+}
+
 @media (max-width: 800px) {
   .container {
     flex-direction: column;
@@ -474,6 +548,14 @@ button.action-btn.small {
   }
   .stat-value {
     font-size: 1.5rem;
+  }
+  .file-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .file-actions {
+    margin-top: 5px;
+    justify-content: flex-end;
   }
 }
 

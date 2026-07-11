@@ -13,5 +13,10 @@ contextBridge.exposeInMainWorld('usbAPI', {
   createPartition: (device, tableType, start, end, password) => ipcRenderer.invoke('create-partition', device, tableType, start, end, password),
   deletePartition: (device, partitionNumber, password) => ipcRenderer.invoke('delete-partition', device, partitionNumber, password),
   createSmartPartition: (device, preset, password) => ipcRenderer.invoke('createSmartPartition', device, preset, password),
-  analyzeContent: (mountpoint) => ipcRenderer.invoke('analyze-content', mountpoint)
+  analyzeContent: (mountpoint) => ipcRenderer.invoke('analyze-content', mountpoint),
+  findEmptyFolders: (mountpoint) => ipcRenderer.invoke('find-empty-folders', mountpoint),
+  findDuplicateFiles: (mountpoint) => ipcRenderer.invoke('find-duplicate-files', mountpoint),
+  findLargeFiles: (mountpoint) => ipcRenderer.invoke('find-large-files', mountpoint),
+  deletePath: (path, password) => ipcRenderer.invoke('delete-path', path, password),
+  openPath: (path) => ipcRenderer.invoke('open-path', path)
 });
