@@ -495,6 +495,117 @@ navButtons.forEach((btn) => {
   });
 });
 
+// Partition operations
+const createPartitionBtn = document.getElementById('createPartitionBtn');
+const deletePartitionBtn = document.getElementById('deletePartitionBtn');
+const partitionSize = document.getElementById('partitionSize');
+const partitionStart = document.getElementById('partitionStart');
+const partitionEnd = document.getElementById('partitionEnd');
+
+// Add password input for partition operations
+const partitionPasswordInput = document.createElement('input');
+partitionPasswordInput.type = 'password';
+partitionPasswordInput.id = 'partitionPassword';
+partitionPasswordInput.placeholder = 'Contraseña del sistema';
+partitionPasswordInput.style.marginTop = '10px';
+partitionPasswordInput.style.width = '100%';
+partitionPasswordInput.style.padding = '8px';
+partitionPasswordInput.style.borderRadius = '4px';
+partitionPasswordInput.style.border = '1px solid #444';
+partitionPasswordInput.style.background = '#222';
+partitionPasswordInput.style.color = '#fff';
+partitionSize.parentElement.parentElement.insertBefore(partitionPasswordInput, partitionSize.parentElement.parentElement.lastElementChild.previousElementSibling);
+
+createPartitionBtn.addEventListener('click', async () => {
+  if (!selected) {
+    appendLog('Selecciona un dispositivo primero.', 'error');
+    setStatus('Error', 'error');
+    return;
+  }
+
+  const device = selected.name.replace('/dev/', '');
+  const tableType = document.querySelector('input[name="partitionTable"]:checked').value;
+  const start = partitionStart.value || '0%';
+  const end = partitionEnd.value || '100%';
+  const password = partitionPasswordInput.value;
+
+  if (!password) {
+    appendLog('Ingresa la contraseña del sistema.', 'error');
+    setStatus('Error', 'error');
+    return;
+  }
+
+  setStatus('Creando partición...', 'warn');
+  showProgress();
+  showCancelButton();
+  createPartitionBtn.disabled = true;
+  deletePartitionBtn.disabled = true;
+
+  try {
+    const result = await window.usbAPI.createPartition(device, tableType, start, end, password);
+    appendLog(result.output, result.success ? 'ok' : 'error');
+    setStatus(result.success ? 'Partición creada' : 'Error', result.success ? 'ok' : 'error');
+    if (result.success) {
+      await loadDevices(true);
+    }
+  } catch (err) {
+    appendLog(`Error: ${err.message}`, 'error');
+    setStatus('Error', 'error');
+  } finally {
+    hideProgress();
+    hideCancelButton();
+    createPartitionBtn.disabled = false;
+    deletePartitionBtn.disabled = false;
+  }
+});
+
+deletePartitionBtn.addEventListener('click', async () => {
+  if (!selected) {
+    appendLog('Selecciona un dispositivo primero.', 'error');
+    setStatus('Error', 'error');
+    return;
+  }
+
+  const device = selected.name.replace('/dev/', '');
+  const partitionNumber = prompt('Ingresa el número de partición a eliminar (ej: 1 para /dev/sdc1):');
+  const password = partitionPasswordInput.value;
+
+  if (!partitionNumber) {
+    appendLog('Debes especificar el número de partición.', 'error');
+    setStatus('Error', 'error');
+    return;
+  }
+
+  if (!password) {
+    appendLog('Ingresa la contraseña del sistema.', 'error');
+    setStatus('Error', 'error');
+    return;
+  }
+
+  setStatus('Eliminando partición...', 'warn');
+  showProgress();
+  showCancelButton();
+  createPartitionBtn.disabled = true;
+  deletePartitionBtn.disabled = true;
+
+  try {
+    const result = await window.usbAPI.deletePartition(device, partitionNumber, password);
+    appendLog(result.output, result.success ? 'ok' : 'error');
+    setStatus(result.success ? 'Partición eliminada' : 'Error', result.success ? 'ok' : 'error');
+    if (result.success) {
+      await loadDevices(true);
+    }
+  } catch (err) {
+    appendLog(`Error: ${err.message}`, 'error');
+    setStatus('Error', 'error');
+  } finally {
+    hideProgress();
+    hideCancelButton();
+    createPartitionBtn.disabled = false;
+    deletePartitionBtn.disabled = false;
+  }
+});
+
 // Initial load
 loadDevices(true); // Forzar actualización en carga inicial
 startAutoRefresh();

@@ -8,5 +8,8 @@ contextBridge.exposeInMainWorld('usbAPI', {
   analyzeDevice: (partition, fsType, mountpoint) => ipcRenderer.invoke('analyze-device', partition, fsType, mountpoint),
   repairDevice: (partition, fsType) => ipcRenderer.invoke('repair-device', partition, fsType),
   formatDevice: (partition, fsType, label, password) => ipcRenderer.invoke('format-device', partition, fsType, label, password),
-  cancelOperations: () => ipcRenderer.invoke('cancel-operations')
+  cancelOperations: () => ipcRenderer.invoke('cancel-operations'),
+  listPartitions: (device) => ipcRenderer.invoke('list-partitions', device),
+  createPartition: (device, tableType, start, end, password) => ipcRenderer.invoke('create-partition', device, tableType, start, end, password),
+  deletePartition: (device, partitionNumber, password) => ipcRenderer.invoke('delete-partition', device, partitionNumber, password)
 });

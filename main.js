@@ -460,6 +460,46 @@ ipcMain.handle('cancel-operations', async () => {
   }
 });
 
+ipcMain.handle('list-partitions', async (event, device) => {
+  try {
+    const result = await runShell(`parted /dev/${device} print`, 10000);
+    return { success: true, output: result.stdout || result.stderr || '' };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
+ipcMain.handle('create-partition', async (event, device, tableType, start, end, password) => {
+  try {
+    // Desmontar el dispositivo primero
+    const umount = await runShellWithPassword(`umount /dev/${device}*`, password, 10000);
+    
+    // Crear tabla de particiones
+    const mklabel = await runShellWithPassword(`parted /dev/${device} mklabel ${tableType}`, password, 10000);
+    
+    // Crear partición
+    const mkpart = await runShellWithPassword(`parted /dev/${device} mkpart primary ${start} ${end}`, password, 10000);
+    
+    return { success: true, output: (mklabel.stdout || '') + (mkpart.stdout || '') + (mklabel.stderr || '') + (mkpart.stderr || '') };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
+ipcMain.handle('delete-partition', async (event, device, partitionNumber, password) => {
+  try {
+    // Desmontar la partición primero
+    const umount = await runShellWithPassword(`umount /dev/${device}${partitionNumber}`, password, 10000);
+    
+    // Eliminar partición
+    const rm = await runShellWithPassword(`parted /dev/${device} rm ${partitionNumber}`, password, 10000);
+    
+    return { success: true, output: (umount.stdout || '') + (rm.stdout || '') + (umount.stderr || '') + (rm.stderr || '') };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
 ipcMain.handle('mount-device', async (event, partition) => {
   try {
     const devicePath = `/dev/${partition}`;
