@@ -10,20 +10,29 @@ body {
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
   color: #fff;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-y: auto;
   user-select: none;
 }
 
 /* Hide scrollbar but keep functionality */
 ::-webkit-scrollbar {
-  width: 0px;
+  width: 8px;
   background: transparent;
 }
 
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 * {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 @keyframes gradientBG {
@@ -34,7 +43,7 @@ body {
 
 .container {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .sidebar {
@@ -46,6 +55,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  flex-shrink: 0;
 }
 
 .brand {
@@ -100,8 +110,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  overflow: hidden;
-  min-height: 0;
+  overflow-y: visible;
 }
 
 .glass-card {
