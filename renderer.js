@@ -666,9 +666,44 @@ analyzeContentBtn.addEventListener('click', async () => {
     return;
   }
 
-  const mountpoint = selected.mountpoint;
+  let mountpoint = selected.mountpoint;
+  
+  // Si no está montado, intentar montar automáticamente
   if (!mountpoint || mountpoint === 'no montado' || mountpoint === null) {
-    appendLog('El dispositivo no está montado. Monta el dispositivo primero.', 'error');
+    appendLog('El dispositivo no está montado. Intentando montar...', 'warn');
+    
+    try {
+      const partitionName = selected.name.replace('/dev/', '');
+      const mountResult = await window.usbAPI.mountDevice(partitionName);
+      
+      if (mountResult.success) {
+        appendLog('Dispositivo montado exitosamente.', 'ok');
+        // Recargar dispositivos para obtener el punto de montaje actualizado
+        await loadDevices(true);
+        
+        // Obtener el dispositivo actualizado
+        const devices = await window.usbAPI.listDevices();
+        if (devices.success) {
+          const updatedDevice = devices.devices.find(d => d.name === selected.name);
+          if (updatedDevice && updatedDevice.mountpoint) {
+            mountpoint = updatedDevice.mountpoint;
+            selected = updatedDevice;
+          }
+        }
+      } else {
+        appendLog(`Error al montar: ${mountResult.output}`, 'error');
+        setStatus('Error al montar', 'error');
+        return;
+      }
+    } catch (err) {
+      appendLog(`Error al montar: ${err.message}`, 'error');
+      setStatus('Error al montar', 'error');
+      return;
+    }
+  }
+
+  if (!mountpoint || mountpoint === 'no montado' || mountpoint === null) {
+    appendLog('No se pudo obtener el punto de montaje. Intenta montar el dispositivo manualmente.', 'error');
     setStatus('Error', 'error');
     return;
   }
