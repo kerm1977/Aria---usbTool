@@ -18,5 +18,6 @@ contextBridge.exposeInMainWorld('usbAPI', {
   findDuplicateFiles: (mountpoint) => ipcRenderer.invoke('find-duplicate-files', mountpoint),
   findLargeFiles: (mountpoint) => ipcRenderer.invoke('find-large-files', mountpoint),
   deletePath: (path, password) => ipcRenderer.invoke('delete-path', path, password),
-  openPath: (path) => ipcRenderer.invoke('open-path', path)
+  openPath: (path) => ipcRenderer.invoke('open-path', path),
+  getDiskSpace: (device) => ipcRenderer.invoke('get-disk-space', device)
 });

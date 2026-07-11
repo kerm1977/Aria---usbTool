@@ -212,10 +212,58 @@ function onDeviceChanged() {
       deviceInfo.textContent = `/dev/${part.name} | ${fstype} | ${mount}`;
       appendLog(`Seleccionado: /dev/${part.name} (${fstype})`);
     }
+    updateSpaceBar(selected);
   } else {
     deviceInfo.textContent = 'Ningún dispositivo detectado';
+    document.getElementById('spaceBarContainer').classList.add('hidden');
   }
 }
+
+// Update space bar with disk usage
+const updateSpaceBar = async (device) => {
+  const spaceBarContainer = document.getElementById('spaceBarContainer');
+  const spaceUsed = document.getElementById('spaceUsed');
+  const spaceTotal = document.getElementById('spaceTotal');
+  const spaceFree = document.getElementById('spaceFree');
+  const spaceBarFill = document.getElementById('spaceBarFill');
+  
+  if (!device || device.type === 'hardware') {
+    spaceBarContainer.classList.add('hidden');
+    return;
+  }
+  
+  try {
+    // Use the device name (if it's a partition, use the parent device)
+    let deviceName = device.name.replace('/dev/', '');
+    if (device.type === 'partition' && device.parentDevice) {
+      deviceName = device.parentDevice;
+    }
+    
+    const result = await window.usbAPI.getDiskSpace(deviceName);
+    
+    if (result.success) {
+      spaceBarContainer.classList.remove('hidden');
+      spaceUsed.textContent = result.used;
+      spaceTotal.textContent = result.total;
+      spaceFree.textContent = `(${result.available} libre)`;
+      spaceBarFill.style.width = `${result.usedPercent}%`;
+      
+      // Change color based on usage
+      if (result.usedPercent > 90) {
+        spaceBarFill.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
+      } else if (result.usedPercent > 70) {
+        spaceBarFill.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
+      } else {
+        spaceBarFill.style.background = 'linear-gradient(90deg, #2ecc71, #27ae60)';
+      }
+    } else {
+      spaceBarContainer.classList.add('hidden');
+    }
+  } catch (err) {
+    console.error('Error getting disk space:', err);
+    spaceBarContainer.classList.add('hidden');
+  }
+};
 
 deviceSelect.addEventListener('change', onDeviceChanged);
 refreshBtn.addEventListener('click', () => {

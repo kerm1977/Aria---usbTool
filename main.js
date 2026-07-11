@@ -723,6 +723,38 @@ ipcMain.handle('open-path', async (event, path) => {
   }
 });
 
+ipcMain.handle('get-disk-space', async (event, device) => {
+  try {
+    const devicePath = device.startsWith('/dev/') ? device : `/dev/${device}`;
+    const cmd = `df -h "${devicePath}" 2>/dev/null | tail -n 1`;
+    const result = await runShell(cmd, 10000);
+    
+    if (result.code !== 0) {
+      return { success: false, output: result.stderr || 'Error obteniendo espacio' };
+    }
+
+    const parts = result.stdout.trim().split(/\s+/);
+    if (parts.length >= 4) {
+      const total = parts[1];
+      const used = parts[2];
+      const available = parts[3];
+      const usedPercent = parseInt(parts[4]) || 0;
+      
+      return { 
+        success: true, 
+        total, 
+        used, 
+        available, 
+        usedPercent 
+      };
+    }
+
+    return { success: false, output: 'Formato de salida no reconocido' };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + (e.stderr || '') };
+  }
+});
+
 ipcMain.handle('mount-device', async (event, partition) => {
   try {
     const devicePath = `/dev/${partition}`;

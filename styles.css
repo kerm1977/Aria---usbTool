@@ -116,6 +116,59 @@ body {
   color: #f1c40f;
 }
 
+.space-bar-container {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.space-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.space-label {
+  color: #bdc3c7;
+  font-weight: 500;
+}
+
+.space-used {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.space-separator {
+  color: #bdc3c7;
+}
+
+.space-total {
+  color: #dfe6e9;
+  font-weight: 500;
+}
+
+.space-free {
+  color: #2ecc71;
+  font-weight: 500;
+}
+
+.space-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.space-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e74c3c, #f39c12);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
 .device-selector {
   display: flex;
   align-items: center;

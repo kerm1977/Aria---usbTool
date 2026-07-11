@@ -45,6 +45,18 @@
         <div>
           <h2>Dispositivo USB seleccionado</h2>
           <p id="deviceInfo">Ningún dispositivo detectado</p>
+          <div class="space-bar-container hidden" id="spaceBarContainer">
+            <div class="space-info">
+              <span class="space-label">Espacio:</span>
+              <span class="space-used" id="spaceUsed">0 GB</span>
+              <span class="space-separator">/</span>
+              <span class="space-total" id="spaceTotal">0 GB</span>
+              <span class="space-free" id="spaceFree">(0 GB libre)</span>
+            </div>
+            <div class="space-bar">
+              <div class="space-bar-fill" id="spaceBarFill"></div>
+            </div>
+          </div>
         </div>
         <div class="device-selector">
           <select id="deviceSelect">
