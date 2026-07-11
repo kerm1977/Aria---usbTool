@@ -5,12 +5,33 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"No tests defined\""
+    "test": "echo \"No tests defined\"",
+    "build": "electron-builder --linux deb",
+    "dist": "electron-builder"
   },
-  "keywords": ["usb", "electron", "format", "repair", "linux"],
+  "keywords": [
+    "usb",
+    "electron",
+    "format",
+    "repair",
+    "linux"
+  ],
   "author": "pmint",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^28.0.0"
+    "electron": "^28.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.usbtools.app",
+    "productName": "USB Tools Pro",
+    "linux": {
+      "target": [
+        "deb"
+      ],
+      "category": "Utility",
+      "maintainer": "pmint",
+      "description": "Herramienta USB con Electron: liberar procesos, analizar, reparar y formatear unidades USB en NTFS/FAT32"
+    }
   }
 }
