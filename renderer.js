@@ -34,6 +34,7 @@ function setStatus(text, type = 'info') {
 
 function getSelectedPartition() {
   if (!selected) return null;
+  if (selected.type === 'hardware') return null;
   if (selected.children && selected.children.length > 0) {
     const part = selected.children.find(c => c.mountpoint && c.mountpoint.length > 0);
     return part ? part.name : selected.children[0].name;
@@ -48,6 +49,7 @@ function getMountpoint(part) {
 
 function getSelectedMountpoint() {
   if (!selected) return null;
+  if (selected.type === 'hardware') return null;
   if (selected.children && selected.children.length > 0) {
     const part = selected.children.find(c => getMountpoint(c));
     return part ? getMountpoint(part) : null;
@@ -57,6 +59,7 @@ function getSelectedMountpoint() {
 
 function getSelectedFsType() {
   if (!selected) return null;
+  if (selected.type === 'hardware') return 'hardware';
   if (selected.children && selected.children.length > 0) {
     const part = selected.children.find(c => c.fstype);
     return part ? part.fstype : selected.fstype;
@@ -85,7 +88,8 @@ async function loadDevices() {
     devices.forEach((dev, index) => {
       const opt = document.createElement('option');
       opt.value = index;
-      opt.textContent = `${dev.model || dev.name} - ${dev.size}`;
+      const typeLabel = dev.type === 'hardware' ? '[Solo hardware] ' : '';
+      opt.textContent = `${typeLabel}${dev.model || dev.name} - ${dev.size}`;
       deviceSelect.appendChild(opt);
     });
     onDeviceChanged();
@@ -100,11 +104,17 @@ function onDeviceChanged() {
   const idx = deviceSelect.value;
   selected = idx !== '' ? devices[idx] : null;
   if (selected) {
-    const part = selected.children && selected.children.length > 0 ? selected.children[0] : selected;
-    const mount = getMountpoint(part) || 'no montado';
-    const fstype = part.fstype || 'desconocido';
-    deviceInfo.textContent = `/dev/${part.name} | ${fstype} | ${mount}`;
-    appendLog(`Seleccionado: /dev/${part.name} (${fstype})`);
+    if (selected.type === 'hardware') {
+      const info = selected.usbInfo ? `Bus ${selected.usbInfo.bus} Device ${selected.usbInfo.device}` : 'USB desconocido';
+      deviceInfo.textContent = `${info} | Hardware detectado | No montado`;
+      appendLog(`Seleccionado: ${selected.model} (hardware only)`);
+    } else {
+      const part = selected.children && selected.children.length > 0 ? selected.children[0] : selected;
+      const mount = getMountpoint(part) || 'no montado';
+      const fstype = part.fstype || 'desconocido';
+      deviceInfo.textContent = `/dev/${part.name} | ${fstype} | ${mount}`;
+      appendLog(`Seleccionado: /dev/${part.name} (${fstype})`);
+    }
   } else {
     deviceInfo.textContent = 'Ningún dispositivo detectado';
   }
