@@ -320,6 +320,8 @@ ipcMain.handle('repair-device', async (event, partition, fsType) => {
       result = await runShell(`ntfsfix /dev/${partition}`, 60000);
     } else if (lower.includes('exfat')) {
       result = await runShell(`fsck.exfat -y /dev/${partition}`, 60000);
+    } else if (lower.includes('ext2') || lower.includes('ext3') || lower.includes('ext4')) {
+      result = await runShell(`fsck -y /dev/${partition}`, 60000);
     } else {
       result = await runShell(`fsck -y /dev/${partition}`, 60000);
     }
@@ -384,8 +386,14 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
         cmd = `mkfs.exfat -n ${safeLabel} /dev/${newPartition}`;
       } else if (fsType === 'ntfs') {
         cmd = `mkfs.ntfs -f -L ${safeLabel} /dev/${newPartition}`;
+      } else if (fsType === 'ext2') {
+        cmd = `mkfs.ext2 -L ${safeLabel} /dev/${newPartition}`;
+      } else if (fsType === 'ext3') {
+        cmd = `mkfs.ext3 -L ${safeLabel} /dev/${newPartition}`;
+      } else if (fsType === 'ext4') {
+        cmd = `mkfs.ext4 -L ${safeLabel} /dev/${newPartition}`;
       } else {
-        return { success: false, output: 'Formato no soportado. Use fat32, exfat o ntfs.' };
+        return { success: false, output: 'Formato no soportado. Use fat32, exfat, ntfs, ext2, ext3 o ext4.' };
       }
       const result = await runShellWithPassword(cmd, password, 60000);
       return { success: true, output: `Creada partición /dev/${newPartition} y formateada\n` + (result.stdout || '') + (result.stderr || '') };
@@ -418,8 +426,14 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
       cmd = `mkfs.exfat -n ${safeLabel} /dev/${partition}`;
     } else if (fsType === 'ntfs') {
       cmd = `mkfs.ntfs -f -L ${safeLabel} /dev/${partition}`;
+    } else if (fsType === 'ext2') {
+      cmd = `mkfs.ext2 -L ${safeLabel} /dev/${partition}`;
+    } else if (fsType === 'ext3') {
+      cmd = `mkfs.ext3 -L ${safeLabel} /dev/${partition}`;
+    } else if (fsType === 'ext4') {
+      cmd = `mkfs.ext4 -L ${safeLabel} /dev/${partition}`;
     } else {
-      return { success: false, output: 'Formato no soportado. Use fat32, exfat o ntfs.' };
+      return { success: false, output: 'Formato no soportado. Use fat32, exfat, ntfs, ext2, ext3 o ext4.' };
     }
     const result = await runShellWithPassword(cmd, password, 60000);
     return { success: true, output: (result.stdout || '') + (result.stderr || '') };
