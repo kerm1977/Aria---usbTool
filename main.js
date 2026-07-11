@@ -239,7 +239,7 @@ ipcMain.handle('analyze-device', async (event, partition, fsType, mountpoint) =>
     lines.push(blkid.stdout || blkid.stderr || '(sin salida)');
 
     if (mountpoint && mountpoint !== 'no montado') {
-      const df = await runShell(`df -h ${mountpoint}`, 5000);
+      const df = await runShell(`df -h "${mountpoint}"`, 5000);
       lines.push('--- df -h ---');
       lines.push(df.stdout || df.stderr || '(sin salida)');
     } else {
