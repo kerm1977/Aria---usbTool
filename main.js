@@ -261,6 +261,10 @@ ipcMain.handle('analyze-device', async (event, partition, fsType, mountpoint) =>
 
 ipcMain.handle('repair-device', async (event, partition, fsType) => {
   try {
+    // Matar procesos que usan el dispositivo
+    const fuser = await runShell(`fuser -km /dev/${partition}`, 10000);
+    // Ignorar error si no hay procesos
+    
     // Desmontar el dispositivo antes de reparar
     const umount = await runShell(`umount /dev/${partition}`, 10000);
     // Ignorar error si ya estaba desmontado
