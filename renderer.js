@@ -12,6 +12,8 @@ const sudoPassword = document.getElementById('sudoPassword');
 
 let devices = [];
 let selected = null;
+let lastDeviceCount = 0;
+let autoRefreshInterval = null;
 
 function getActivePanel() {
   return document.querySelector('.panel.active');
@@ -134,25 +136,46 @@ async function loadDevices() {
       setStatus('Error al listar', 'error');
       return;
     }
-    devices = result.devices || [];
-    deviceSelect.innerHTML = '';
-    if (devices.length === 0) {
-      deviceSelect.innerHTML = '<option value="">No se encontraron USB</option>';
-      setStatus('No se encontraron USB');
-      return;
+    const newDevices = result.devices || [];
+    const currentCount = newDevices.length;
+    
+    // Detectar cambios en la cantidad de dispositivos
+    if (currentCount !== lastDeviceCount) {
+      lastDeviceCount = currentCount;
+      devices = newDevices;
+      deviceSelect.innerHTML = '';
+      if (devices.length === 0) {
+        deviceSelect.innerHTML = '<option value="">No se encontraron USB</option>';
+        setStatus('No se encontraron USB');
+        return;
+      }
+      devices.forEach((dev, index) => {
+        const opt = document.createElement('option');
+        opt.value = index;
+        const typeLabel = dev.type === 'hardware' ? '[Solo hardware] ' : '';
+        opt.textContent = `${typeLabel}${dev.model || dev.name} - ${dev.size}`;
+        deviceSelect.appendChild(opt);
+      });
+      onDeviceChanged();
+      setStatus('Listo', 'ok');
     }
-    devices.forEach((dev, index) => {
-      const opt = document.createElement('option');
-      opt.value = index;
-      const typeLabel = dev.type === 'hardware' ? '[Solo hardware] ' : '';
-      opt.textContent = `${typeLabel}${dev.model || dev.name} - ${dev.size}`;
-      deviceSelect.appendChild(opt);
-    });
-    onDeviceChanged();
-    setStatus('Listo', 'ok');
   } catch (e) {
     appendLog(`Error inesperado: ${e.message}`, 'error');
     setStatus('Error', 'error');
+  }
+}
+
+function startAutoRefresh() {
+  if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+  autoRefreshInterval = setInterval(() => {
+    loadDevices();
+  }, 3000); // Verificar cada 3 segundos
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
   }
 }
 
@@ -177,7 +200,10 @@ function onDeviceChanged() {
 }
 
 deviceSelect.addEventListener('change', onDeviceChanged);
-refreshBtn.addEventListener('click', loadDevices);
+refreshBtn.addEventListener('click', () => {
+  lastDeviceCount = -1; // Forzar recarga completa
+  loadDevices();
+});
 
 function getSelectedFormat() {
   const radios = document.getElementsByName('fsType');
@@ -454,3 +480,4 @@ navButtons.forEach((btn) => {
 
 // Initial load
 loadDevices();
+startAutoRefresh();
