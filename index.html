@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self';">
+  <title>USB Tools Pro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>USB Tools Pro</h1>
+        <p>Reparación · Análisis · Formateo</p>
+      </div>
+      <button class="nav-btn active" data-target="panel-liberar">🔓 Liberar USB</button>
+      <button class="nav-btn" data-target="panel-analizar">🔍 Analizar USB</button>
+      <button class="nav-btn" data-target="panel-reparar">🛠️ Reparar USB</button>
+      <button class="nav-btn" data-target="panel-formatear">💾 Formatear USB</button>
+    </aside>
+
+    <main class="main-content">
+      <section class="glass-card header-card">
+        <div>
+          <h2>Dispositivo USB seleccionado</h2>
+          <p id="deviceInfo">Ningún dispositivo detectado</p>
+        </div>
+        <div class="device-selector">
+          <select id="deviceSelect">
+            <option value="">Cargando dispositivos...</option>
+          </select>
+          <button class="action-btn secondary" id="refreshBtn">🔄 Refrescar</button>
+        </div>
+      </section>
+
+      <section id="panel-liberar" class="panel active">
+        <div class="glass-card">
+          <h3 class="panel-title">Liberar y expulsar USB</h3>
+          <p class="panel-desc">Mata los procesos que bloquean la unidad, la desmonta y la expulsa.</p>
+          <div class="form-row">
+            <button class="action-btn danger" id="killBtn">💀 MATAR PROCESOS Y DESMONTAR</button>
+          </div>
+          <div class="form-row">
+            <button class="action-btn danger" id="ejectBtn">⏏️ EXPULSAR UNIDAD</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-analizar" class="panel">
+        <div class="glass-card">
+          <h3 class="panel-title">Análisis de USB</h3>
+          <p class="panel-desc">Muestra información del sistema de archivos, uso de espacio y estado de salud.</p>
+          <div class="form-row">
+            <button class="action-btn" id="analyzeBtn">🔍 ANALIZAR AHORA</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-reparar" class="panel">
+        <div class="glass-card">
+          <h3 class="panel-title">Reparar USB</h3>
+          <p class="panel-desc">Ejecuta fsck para FAT/exFAT o ntfsfix para NTFS. Detecta el tipo automáticamente.</p>
+          <div class="form-row">
+            <button class="action-btn" id="repairBtn">🛠️ REPARAR UNIDAD</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-formatear" class="panel">
+        <div class="glass-card">
+          <h3 class="panel-title">Formatear USB</h3>
+          <p class="panel-desc">Borra todo el contenido y formatea en FAT32 o NTFS.</p>
+          <div class="form-row">
+            <label for="volumeLabel">Etiqueta:</label>
+            <input type="text" id="volumeLabel" placeholder="USB" maxlength="11">
+          </div>
+          <div class="form-row">
+            <label>Sistema:</label>
+            <div class="radio-group">
+              <label><input type="radio" name="fsType" value="fat32" checked> FAT32</label>
+              <label><input type="radio" name="fsType" value="ntfs"> NTFS</label>
+            </div>
+          </div>
+          <div class="form-row">
+            <button class="action-btn danger" id="formatBtn">⚠️ FORMATEAR UNIDAD</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-card" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="status-bar">
+          <span>Consola de operaciones</span>
+          <div>
+            <button id="copyLogsBtn" class="action-btn secondary" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px;">📋 Copiar logs</button>
+            <span id="statusText">Listo</span>
+          </div>
+        </div>
+        <div id="log" class="log-area">> Selecciona una unidad USB y una acción.</div>
+      </section>
+    </main>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>

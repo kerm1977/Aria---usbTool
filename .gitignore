@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build output
+dist/
+out/
+
+# Environment
+.env
+
+# Electron
+*.asar
+
+# OS
+.DS_Store
+Thumbs.db
