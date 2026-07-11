@@ -10,6 +10,9 @@ const repairBtn = document.getElementById('repairBtn');
 const formatBtn = document.getElementById('formatBtn');
 const volumeLabel = document.getElementById('volumeLabel');
 const copyLogsBtn = document.getElementById('copyLogsBtn');
+const progressContainer = document.getElementById('progressContainer');
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
 
 let devices = [];
 let selected = null;
@@ -30,6 +33,21 @@ function clearLog() {
 function setStatus(text, type = 'info') {
   statusText.textContent = text;
   statusText.style.color = type === 'error' ? '#e74c3c' : (type === 'ok' ? '#2ecc71' : '#f1c40f');
+}
+
+function showProgress() {
+  progressContainer.style.display = 'block';
+  progressBar.style.width = '0%';
+  progressText.textContent = '0%';
+}
+
+function hideProgress() {
+  progressContainer.style.display = 'none';
+}
+
+function updateProgress(percent, text) {
+  progressBar.style.width = `${percent}%`;
+  progressText.textContent = text || `${percent}%`;
 }
 
 function getSelectedPartition() {
@@ -193,11 +211,25 @@ analyzeBtn.addEventListener('click', async () => {
   appendLog(`Analizando /dev/${partition} (tipo: ${fsType || 'desconocido'})...`);
   setStatus('Analizando...');
   analyzeBtn.disabled = true;
+  showProgress();
+  
+  let progress = 0;
+  const progressInterval = setInterval(() => {
+    progress += 10;
+    if (progress > 90) progress = 90;
+    updateProgress(progress, 'Analizando...');
+  }, 500);
+  
   try {
     const result = await window.usbAPI.analyzeDevice(partition, fsType, mountpoint);
+    clearInterval(progressInterval);
+    updateProgress(100, 'Completado');
     appendLog(result.output, result.success ? 'ok' : 'error');
     setStatus(result.success ? 'Análisis completo' : 'Error', result.success ? 'ok' : 'error');
+    setTimeout(hideProgress, 500);
   } catch (e) {
+    clearInterval(progressInterval);
+    hideProgress();
     appendLog(`Error: ${e.message}`, 'error');
     setStatus('Error', 'error');
   } finally {
@@ -216,12 +248,26 @@ repairBtn.addEventListener('click', async () => {
   appendLog(`Reparando /dev/${partition} (tipo: ${fsType || 'auto'})...`);
   setStatus('Reparando...');
   repairBtn.disabled = true;
+  showProgress();
+  
+  let progress = 0;
+  const progressInterval = setInterval(() => {
+    progress += 15;
+    if (progress > 90) progress = 90;
+    updateProgress(progress, 'Reparando...');
+  }, 500);
+  
   try {
     const result = await window.usbAPI.repairDevice(partition, fsType);
+    clearInterval(progressInterval);
+    updateProgress(100, 'Completado');
     appendLog(result.output, result.success ? 'ok' : 'error');
     setStatus(result.success ? 'Reparación finalizada' : 'Error', result.success ? 'ok' : 'error');
     await loadDevices();
+    setTimeout(hideProgress, 500);
   } catch (e) {
+    clearInterval(progressInterval);
+    hideProgress();
     appendLog(`Error: ${e.message}`, 'error');
     setStatus('Error', 'error');
   } finally {
@@ -246,13 +292,27 @@ formatBtn.addEventListener('click', async () => {
   appendLog(`Formateando /dev/${partition} como ${fsType.toUpperCase()} con etiqueta "${label}"...`);
   setStatus('Formateando...');
   formatBtn.disabled = true;
+  showProgress();
+  
+  let progress = 0;
+  const progressInterval = setInterval(() => {
+    progress += 20;
+    if (progress > 90) progress = 90;
+    updateProgress(progress, 'Formateando...');
+  }, 500);
+  
   try {
     const result = await window.usbAPI.formatDevice(partition, fsType, label);
+    clearInterval(progressInterval);
+    updateProgress(100, 'Completado');
     appendLog(result.output, result.success ? 'ok' : 'error');
     appendLog(result.success ? 'Formato completado.' : 'Error al formatear.', result.success ? 'ok' : 'error');
     setStatus(result.success ? 'Formateado' : 'Error', result.success ? 'ok' : 'error');
     await loadDevices();
+    setTimeout(hideProgress, 500);
   } catch (e) {
+    clearInterval(progressInterval);
+    hideProgress();
     appendLog(`Error: ${e.message}`, 'error');
     setStatus('Error', 'error');
   } finally {
