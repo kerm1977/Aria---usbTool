@@ -320,6 +320,10 @@ ipcMain.handle('format-device', async (event, partition, fsType, label, password
     const blockdev = await runShellWithPassword(`blockdev --setrw /dev/${partition}`, password, 5000);
     // Ignorar error si no es necesario
     
+    // Desbloquear dispositivo a nivel hardware
+    const hdparm = await runShellWithPassword(`hdparm -r0 /dev/${partition}`, password, 5000);
+    // Ignorar error si no es necesario
+    
     const safeLabel = (label || 'USB').replace(/[^a-zA-Z0-9_-]/g, '').toUpperCase().slice(0, 11);
     let cmd;
     if (fsType === 'fat32') {
