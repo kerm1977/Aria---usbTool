@@ -1,8 +1,6 @@
 const deviceSelect = document.getElementById('deviceSelect');
 const deviceInfo = document.getElementById('deviceInfo');
 const refreshBtn = document.getElementById('refreshBtn');
-const log = document.getElementById('log');
-const statusText = document.getElementById('statusText');
 const killBtn = document.getElementById('killBtn');
 const ejectBtn = document.getElementById('ejectBtn');
 const mountBtn = document.getElementById('mountBtn');
@@ -10,54 +8,83 @@ const analyzeBtn = document.getElementById('analyzeBtn');
 const repairBtn = document.getElementById('repairBtn');
 const formatBtn = document.getElementById('formatBtn');
 const volumeLabel = document.getElementById('volumeLabel');
-const copyLogsBtn = document.getElementById('copyLogsBtn');
-const cancelBtn = document.getElementById('cancelBtn');
-const progressContainer = document.getElementById('progressContainer');
-const progressBar = document.getElementById('progressBar');
-const progressText = document.getElementById('progressText');
 
 let devices = [];
 let selected = null;
 
+function getActivePanel() {
+  return document.querySelector('.panel.active');
+}
+
+function getPanelElements() {
+  const panel = getActivePanel();
+  if (!panel) return null;
+  return {
+    log: panel.querySelector('.log-area'),
+    statusText: panel.querySelector('.status-text'),
+    cancelBtn: panel.querySelector('.cancel-btn'),
+    copyLogsBtn: panel.querySelector('.copy-logs-btn'),
+    progressContainer: panel.querySelector('.progress-container'),
+    progressBar: panel.querySelector('.progress-bar'),
+    progressText: panel.querySelector('.progress-text')
+  };
+}
+
 function appendLog(text, type = 'info') {
+  const elements = getPanelElements();
+  if (!elements || !elements.log) return;
   const line = document.createElement('div');
   line.className = type;
   const timestamp = new Date().toLocaleTimeString();
   line.textContent = `[${timestamp}] ${text}`;
-  log.appendChild(line);
-  log.scrollTop = log.scrollHeight;
+  elements.log.appendChild(line);
+  elements.log.scrollTop = elements.log.scrollHeight;
 }
 
 function clearLog() {
-  log.innerHTML = '';
+  const elements = getPanelElements();
+  if (!elements || !elements.log) return;
+  elements.log.innerHTML = '';
 }
 
 function setStatus(text, type = 'info') {
-  statusText.textContent = text;
-  statusText.style.color = type === 'error' ? '#e74c3c' : (type === 'ok' ? '#2ecc71' : '#f1c40f');
+  const elements = getPanelElements();
+  if (!elements || !elements.statusText) return;
+  elements.statusText.textContent = text;
+  elements.statusText.style.color = type === 'error' ? '#e74c3c' : (type === 'ok' ? '#2ecc71' : '#f1c40f');
 }
 
 function showProgress() {
-  progressContainer.classList.remove('hidden');
-  progressBar.style.width = '0%';
-  progressText.textContent = '0%';
+  const elements = getPanelElements();
+  if (!elements || !elements.progressContainer) return;
+  elements.progressContainer.classList.remove('hidden');
+  elements.progressBar.style.width = '0%';
+  elements.progressText.textContent = '0%';
 }
 
 function hideProgress() {
-  progressContainer.classList.add('hidden');
+  const elements = getPanelElements();
+  if (!elements || !elements.progressContainer) return;
+  elements.progressContainer.classList.add('hidden');
 }
 
 function updateProgress(percent, text) {
-  progressBar.style.width = `${percent}%`;
-  progressText.textContent = text || `${percent}%`;
+  const elements = getPanelElements();
+  if (!elements || !elements.progressBar) return;
+  elements.progressBar.style.width = `${percent}%`;
+  elements.progressText.textContent = text || `${percent}%`;
 }
 
 function showCancelButton() {
-  cancelBtn.classList.remove('hidden');
+  const elements = getPanelElements();
+  if (!elements || !elements.cancelBtn) return;
+  elements.cancelBtn.classList.remove('hidden');
 }
 
 function hideCancelButton() {
-  cancelBtn.classList.add('hidden');
+  const elements = getPanelElements();
+  if (!elements || !elements.cancelBtn) return;
+  elements.cancelBtn.classList.add('hidden');
 }
 
 function getSelectedPartition() {
@@ -360,44 +387,50 @@ formatBtn.addEventListener('click', async () => {
 });
 
 // Copy logs to clipboard
-copyLogsBtn.addEventListener('click', async () => {
-  const text = log.innerText || '';
-  try {
-    await navigator.clipboard.writeText(text);
-    setStatus('Logs copiados', 'ok');
-    appendLog('Logs copiados al portapapeles.', 'ok');
-  } catch (e) {
+document.addEventListener('click', async (e) => {
+  if (e.target.classList.contains('copy-logs-btn')) {
+    const elements = getPanelElements();
+    if (!elements || !elements.log) return;
+    const text = elements.log.innerText || '';
     try {
-      const range = document.createRange();
-      const selection = window.getSelection();
-      range.selectNodeContents(log);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      document.execCommand('copy');
-      selection.removeAllRanges();
+      await navigator.clipboard.writeText(text);
       setStatus('Logs copiados', 'ok');
       appendLog('Logs copiados al portapapeles.', 'ok');
     } catch (err) {
-      setStatus('No se pudo copiar', 'error');
-      appendLog('No se pudo copiar: ' + err.message, 'error');
+      try {
+        const range = document.createRange();
+        const selection = window.getSelection();
+        range.selectNodeContents(elements.log);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        document.execCommand('copy');
+        selection.removeAllRanges();
+        setStatus('Logs copiados', 'ok');
+        appendLog('Logs copiados al portapapeles.', 'ok');
+      } catch (err2) {
+        setStatus('No se pudo copiar', 'error');
+        appendLog('No se pudo copiar: ' + err2.message, 'error');
+      }
     }
   }
 });
 
 // Cancel operations
-cancelBtn.addEventListener('click', async () => {
-  try {
-    const result = await window.usbAPI.cancelOperations();
-    appendLog(result.output, result.success ? 'warn' : 'error');
-    setStatus('Operación cancelada', 'warn');
-    hideProgress();
-    hideCancelButton();
-    analyzeBtn.disabled = false;
-    repairBtn.disabled = false;
-    formatBtn.disabled = false;
-  } catch (e) {
-    appendLog(`Error al cancelar: ${e.message}`, 'error');
-    setStatus('Error', 'error');
+document.addEventListener('click', async (e) => {
+  if (e.target.classList.contains('cancel-btn')) {
+    try {
+      const result = await window.usbAPI.cancelOperations();
+      appendLog(result.output, result.success ? 'warn' : 'error');
+      setStatus('Operación cancelada', 'warn');
+      hideProgress();
+      hideCancelButton();
+      analyzeBtn.disabled = false;
+      repairBtn.disabled = false;
+      formatBtn.disabled = false;
+    } catch (err) {
+      appendLog(`Error al cancelar: ${err.message}`, 'error');
+      setStatus('Error', 'error');
+    }
   }
 });
 
