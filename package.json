@@ -30,15 +30,31 @@
     "appId": "com.usbtools.app",
     "productName": "USB Tools Pro",
     "directories": {
-      "output": "/home/pmint/Documentos"
+      "output": "/home/pmint/Documentos",
+      "buildResources": "build"
     },
+    "files": [
+      "src/**/*",
+      "index.html",
+      "preload.js",
+      "icon.png",
+      "native-addon/**/*",
+      "node_modules/**/*"
+    ],
     "linux": {
       "target": [
-        "deb"
+        "deb",
+        "AppImage"
       ],
       "category": "Utility",
       "maintainer": "pmint",
-      "description": "Herramienta USB con Electron: liberar procesos, analizar, reparar y formatear unidades USB en NTFS/FAT32"
-    }
+      "description": "Herramienta USB con Electron: liberar procesos, analizar, reparar y formatear unidades USB en NTFS/FAT32",
+      "desktop": {
+        "Name": "USB Tools Pro",
+        "Comment": "Herramienta para gestión de discos USB",
+        "Categories": "Utility;System;"
+      }
+    },
+    "npmRebuild": true
   }
 }
