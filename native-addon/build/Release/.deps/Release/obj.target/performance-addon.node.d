@@ -1,0 +1,1 @@
+cmd_Release/obj.target/performance-addon.node := g++ -o Release/obj.target/performance-addon.node -shared -pthread -rdynamic -m64  -Wl,-soname=performance-addon.node -Wl,--start-group Release/obj.target/performance-addon/src/performance-addon.o -Wl,--end-group 

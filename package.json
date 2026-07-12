@@ -18,9 +18,13 @@
   ],
   "author": "pmint",
   "license": "MIT",
+  "dependencies": {
+    "usb-tools-performance-addon": "./native-addon"
+  },
   "devDependencies": {
     "electron": "^28.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "node-gyp": "^10.0.0"
   },
   "build": {
     "appId": "com.usbtools.app",

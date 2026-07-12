@@ -1,5 +1,12 @@
 
 // Configurar listener para cambios de discos en tiempo real
+window.usbAPI.onRepairProgress((data) => {
+  const { step, total, message } = data;
+  const percent = Math.round((step / total) * 100);
+  window.UIHelpers.setStatus(`${message} (${step}/${total})`, 'info');
+  window.UIHelpers.appendLog(`${message} - ${percent}%`, 'info');
+});
+
 window.usbAPI.onDiscsChanged((data) => {
   if (data.added.length > 0) {
     window.UIHelpers.appendLog(`Discos conectados: ${data.added.join(', ')}`, 'ok');
@@ -220,12 +227,14 @@ async function handleScanDiscHealth(devicePath) {
 }
 
 async function handleDeepRepair(devicePath) {
-  const password = document.getElementById('sudoPassword').value;
+  const password = document.getElementById('discSudoPassword').value;
   if (!password) {
     window.UIHelpers.appendLog('Se requiere contraseña de sudo', 'error');
     window.UIHelpers.setStatus('Falta contraseña', 'error');
     return;
   }
+  
+  const forceBadblocks = document.getElementById('forceBadblocks')?.checked || false;
   
   if (!confirm(`ADVERTENCIA: La reparación profunda puede causar pérdida de datos. ¿Deseas continuar con la reparación de ${devicePath}?`)) {
     return;
@@ -236,7 +245,7 @@ async function handleDeepRepair(devicePath) {
   window.UIHelpers.showCancelButton();
   
   try {
-    const result = await window.usbAPI.deepRepairDisc(devicePath, password);
+    const result = await window.usbAPI.deepRepairDisc(devicePath, password, forceBadblocks);
     
     if (!result.success) {
       window.UIHelpers.appendLog(`Error: ${result.error}`, 'error');
@@ -245,6 +254,14 @@ async function handleDeepRepair(devicePath) {
     }
     
     window.UIHelpers.appendLog(result.output, 'ok');
+    
+    if (result.errors && result.errors.length > 0) {
+      window.UIHelpers.appendLog(`\n⚠️ Advertencias durante la reparación:`, 'warn');
+      result.errors.forEach(err => {
+        window.UIHelpers.appendLog(`- ${err.step}: ${err.error}`, 'warn');
+      });
+    }
+    
     window.UIHelpers.setStatus('Reparación completada', 'ok');
   } catch (e) {
     window.UIHelpers.appendLog(`Error: ${e.message}`, 'error');

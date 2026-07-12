@@ -1,0 +1,28 @@
+{
+  "name": "usb-tools-performance-addon",
+  "version": "1.0.0",
+  "description": "Addon nativo de Node.js para cálculos de alto rendimiento en análisis de discos USB",
+  "main": "index.js",
+  "keywords": [
+    "native",
+    "addon",
+    "c++",
+    "performance",
+    "disk-analysis",
+    "electron"
+  ],
+  "author": "pmint",
+  "license": "MIT",
+  "gypfile": true,
+  "dependencies": {
+    "node-addon-api": "^7.0.0"
+  },
+  "devDependencies": {
+    "node-gyp": "^10.0.0"
+  },
+  "scripts": {
+    "install": "node-gyp rebuild",
+    "build": "node-gyp rebuild",
+    "clean": "node-gyp clean"
+  }
+}

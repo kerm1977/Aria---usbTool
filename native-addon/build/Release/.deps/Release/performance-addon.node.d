@@ -1,0 +1,1 @@
+cmd_Release/performance-addon.node := ln -f "Release/obj.target/performance-addon.node" "Release/performance-addon.node" 2>/dev/null || (rm -rf "Release/performance-addon.node" && cp -af "Release/obj.target/performance-addon.node" "Release/performance-addon.node")

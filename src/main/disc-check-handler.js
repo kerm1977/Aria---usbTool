@@ -1,4 +1,4 @@
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 const fs = require('fs');
 const util = require('util');
 const execPromise = util.promisify(exec);
@@ -187,35 +187,224 @@ async function scanDiscHealth(devicePath) {
   }
 }
 
-async function deepRepairDisc(devicePath, password) {
+async function deepRepairDisc(devicePath, password, event = null, forceBadblocks = false) {
   try {
-    const commands = [];
-    
-    // Comando 1: Desmontar todas las particiones del disco
-    commands.push(`echo "${password}" | sudo -S umount ${devicePath}* 2>/dev/null || true`);
-    
-    // Comando 2: Ejecutar fsck en todas las particiones
-    commands.push(`echo "${password}" | sudo -S fsck -y ${devicePath}* 2>/dev/null || true`);
-    
-    // Comando 3: Para HDDs, ejecutar badblocks (escaneo de superficie)
-    commands.push(`echo "${password}" | sudo -S badblocks -sv ${devicePath} 2>/dev/null || true`);
-    
-    // Comando 4: Ejecutar smartctl short self-test
-    commands.push(`echo "${password}" | sudo -S smartctl -t short ${devicePath} 2>/dev/null || true`);
-    
     let output = '';
-    for (const cmd of commands) {
+    let errors = [];
+    
+    // Paso 1: Validar contraseña de sudo
+    if (event) {
+      event.sender.send('repair-progress', { step: 1, total: 5, message: 'Validando contraseña de sudo' });
+    }
+    
+    try {
+      await runCommandWithPassword('echo "Password OK"', password, 5000);
+      output += '--- Validando contraseña de sudo ---\nContraseña válida\n';
+    } catch (error) {
+      output += `--- Validando contraseña de sudo (error) ---\nContraseña incorrecta o sin permisos\n`;
+      return {
+        success: false,
+        error: 'Contraseña de sudo incorrecta o sin permisos',
+        output
+      };
+    }
+    
+    // Detectar si es disco Kingston/SSD
+    let isKingstonSSD = false;
+    let isSSD = false;
+    try {
+      const smartResult = await getSmartInfo(devicePath);
+      if (smartResult.success && smartResult.data) {
+        const model = (smartResult.data.model_name || smartResult.data.model || '').toLowerCase();
+        const deviceModel = model;
+        isKingstonSSD = deviceModel.includes('kingston');
+        isSSD = !smartResult.data.rotation_rate || smartResult.data.rotation_rate === 0;
+        
+        if (isKingstonSSD) {
+          output += `--- Detectado disco Kingston SSD ---\nModelo: ${deviceModel}\n`;
+        } else if (isSSD) {
+          output += `--- Detectado SSD ---\nModelo: ${deviceModel}\n`;
+        }
+      }
+    } catch (error) {
+      output += `--- Detección de tipo de disco (error) ---\n${error.message || ''}\n`;
+    }
+    
+    // Si forceBadblocks es true, saltar directamente a badblocks
+    if (forceBadblocks) {
+      if (event) {
+        event.sender.send('repair-progress', { step: 1, total: 1, message: 'Ejecutando badblocks forzado' });
+      }
+      
       try {
-        const { stdout, stderr } = await execPromise(cmd);
-        output += stdout + stderr + '\n';
+        output += '--- Iniciando badblocks (forzado) ---\nComando: badblocks -sv ' + devicePath + '\n';
+        const result = await runCommandWithPassword(`badblocks -sv ${devicePath}`, password, 60 * 60 * 1000);
+        output += '--- Escaneo badblocks completado ---\nCompletado sin errores\n';
+        output += 'Salida: ' + (result.stdout || 'Sin salida') + '\n';
       } catch (error) {
-        output += error.message + '\n';
+        output += `--- Escaneo badblocks (error) ---\n`;
+        output += `Código: ${error.code}\n`;
+        output += `Mensaje: ${error.message || 'Sin mensaje'}\n`;
+        output += `Stderr: ${error.stderr || 'Sin stderr'}\n`;
+        output += `Stdout: ${error.stdout || 'Sin stdout'}\n`;
+        errors.push({ step: 'Badblocks forzado', error: error.message || error.stderr || 'Error desconocido' });
+      }
+      
+      return {
+        success: true,
+        output: output || 'Badblocks forzado completado',
+        errors: errors.length > 0 ? errors : undefined
+      };
+    }
+    
+    // Paso 2: Obtener particiones del dispositivo
+    if (event) {
+      event.sender.send('repair-progress', { step: 2, total: 5, message: 'Buscando particiones' });
+    }
+    
+    let partitions = [];
+    try {
+      const result = await runCommandWithPassword(`lsblk -ln -o NAME ${devicePath}`, password, 10000);
+      const lines = result.stdout.trim().split('\n');
+      partitions = lines.filter(line => line.trim() && !line.includes(devicePath.split('/').pop()));
+      output += `--- Particiones encontradas ---\n${partitions.length > 0 ? partitions.join(', ') : 'Ninguna partición encontrada'}\n`;
+    } catch (error) {
+      output += `--- Buscando particiones (error) ---\n${error.message || error.stderr || ''}\n`;
+    }
+    
+    // Paso 3: Desmontar particiones (si existen)
+    if (event) {
+      event.sender.send('repair-progress', { step: 3, total: 5, message: 'Desmontando particiones' });
+    }
+    
+    if (partitions.length > 0) {
+      for (const partition of partitions) {
+        const partitionPath = `/dev/${partition.trim()}`;
+        try {
+          await runCommandWithPassword(`umount ${partitionPath}`, password, 30000);
+          output += `--- Desmontando ${partitionPath} ---\nDesmontado exitosamente\n`;
+        } catch (error) {
+          if (error.code === 32) {
+            output += `--- Desmontando ${partitionPath} ---\nNo estaba montado (OK)\n`;
+          } else {
+            output += `--- Desmontando ${partitionPath} (error) ---\n${error.message || error.stderr || ''}\n`;
+            errors.push({ step: `Desmontando ${partitionPath}`, error: error.message || error.stderr || 'Error desconocido' });
+          }
+        }
+      }
+    } else {
+      output += '--- Desmontando particiones ---\nNo hay particiones que desmontar\n';
+    }
+    
+    // Paso 4: Ejecutar fsck en particiones (si existen)
+    if (event) {
+      event.sender.send('repair-progress', { step: 4, total: 5, message: 'Ejecutando fsck' });
+    }
+    
+    if (partitions.length > 0) {
+      for (const partition of partitions) {
+        const partitionPath = `/dev/${partition.trim()}`;
+        try {
+          await runCommandWithPassword(`fsck -y ${partitionPath}`, password, 300000);
+          output += `--- fsck en ${partitionPath} ---\nCompletado\n`;
+        } catch (error) {
+          output += `--- fsck en ${partitionPath} (error) ---\n${error.message || error.stderr || ''}\n`;
+          errors.push({ step: `fsck en ${partitionPath}`, error: error.message || error.stderr || 'Error desconocido' });
+        }
+      }
+    } else {
+      output += '--- Ejecutando fsck ---\nNo hay particiones para verificar\n';
+    }
+    
+    // Paso 5: Escaneo de badblocks (opcional, puede tardar mucho)
+    // Para discos Kingston SSD, priorizar smartctl sobre badblocks
+    if (isKingstonSSD) {
+      if (event) {
+        event.sender.send('repair-progress', { step: 5, total: 5, message: 'Análisis S.M.A.R.T. (Kingston SSD)' });
+      }
+      
+      output += '--- Kingston SSD detectado ---\nPriorizando análisis S.M.A.R.T. sobre badblocks\n';
+      
+      try {
+        const smartResult = await getSmartInfo(devicePath);
+        if (smartResult.success) {
+          output += '--- Análisis S.M.A.R.T. completado ---\n';
+          if (smartResult.data) {
+            output += `Modelo: ${smartResult.data.model_name || smartResult.data.model || 'Desconocido'}\n`;
+            output += `Estado: ${smartResult.data.smart_status?.passed ? 'OK' : 'Fallo'}\n`;
+            if (smartResult.data.temperature) {
+              output += `Temperatura: ${smartResult.data.temperature.current}°C\n`;
+            }
+            if (smartResult.data.power_on_time) {
+              output += `Horas encendido: ${smartResult.data.power_on_time.hours}h\n`;
+            }
+          }
+        } else {
+          output += '--- Análisis S.M.A.R.T. (error) ---\n' + (smartResult.error || 'Error desconocido') + '\n';
+          errors.push({ step: 'Análisis S.M.A.R.T.', error: smartResult.error || 'Error desconocido' });
+        }
+      } catch (error) {
+        output += `--- Análisis S.M.A.R.T. (error) ---\n${error.message || ''}\n`;
+        errors.push({ step: 'Análisis S.M.A.R.T.', error: error.message || 'Error desconocido' });
+      }
+      
+      output += '⚠️ badblocks omitido para Kingston SSD (recomendado para SSDs)\n';
+    } else if (isSSD) {
+      if (event) {
+        event.sender.send('repair-progress', { step: 5, total: 5, message: 'Análisis S.M.A.R.T. (SSD)' });
+      }
+      
+      output += '--- SSD detectado ---\nPriorizando análisis S.M.A.R.T. sobre badblocks\n';
+      
+      try {
+        const smartResult = await getSmartInfo(devicePath);
+        if (smartResult.success) {
+          output += '--- Análisis S.M.A.R.T. completado ---\n';
+          if (smartResult.data) {
+            output += `Modelo: ${smartResult.data.model_name || smartResult.data.model || 'Desconocido'}\n`;
+            output += `Estado: ${smartResult.data.smart_status?.passed ? 'OK' : 'Fallo'}\n`;
+            if (smartResult.data.temperature) {
+              output += `Temperatura: ${smartResult.data.temperature.current}°C\n`;
+            }
+            if (smartResult.data.power_on_time) {
+              output += `Horas encendido: ${smartResult.data.power_on_time.hours}h\n`;
+            }
+          }
+        } else {
+          output += '--- Análisis S.M.A.R.T. (error) ---\n' + (smartResult.error || 'Error desconocido') + '\n';
+          errors.push({ step: 'Análisis S.M.A.R.T.', error: smartResult.error || 'Error desconocido' });
+        }
+      } catch (error) {
+        output += `--- Análisis S.M.A.R.T. (error) ---\n${error.message || ''}\n`;
+        errors.push({ step: 'Análisis S.M.A.R.T.', error: error.message || 'Error desconocido' });
+      }
+      
+      output += '⚠️ badblocks omitido para SSD (recomendado para SSDs)\n';
+    } else {
+      // Para HDDs tradicionales, ejecutar badblocks
+      if (event) {
+        event.sender.send('repair-progress', { step: 5, total: 5, message: 'Escaneando superficie (badblocks)' });
+      }
+      
+      try {
+        output += '--- Iniciando badblocks ---\nComando: badblocks -sv ' + devicePath + '\n';
+        const result = await runCommandWithPassword(`badblocks -sv ${devicePath}`, password, 60 * 60 * 1000);
+        output += '--- Escaneando superficie (badblocks) ---\nCompletado sin errores\n';
+        output += 'Salida: ' + (result.stdout || 'Sin salida') + '\n';
+      } catch (error) {
+        output += `--- Escaneando superficie (badblocks) (error) ---\n`;
+        output += `Código: ${error.code}\n`;
+        output += `Mensaje: ${error.message || 'Sin mensaje'}\n`;
+        output += `Stderr: ${error.stderr || 'Sin stderr'}\n`;
+        output += `Stdout: ${error.stdout || 'Sin stdout'}\n`;
+        errors.push({ step: 'Escaneando superficie (badblocks)', error: error.message || error.stderr || 'Error desconocido' });
       }
     }
     
     return {
       success: true,
-      output: output || 'Reparación profunda completada'
+      output: output || 'Reparación profunda completada',
+      errors: errors.length > 0 ? errors : undefined
     };
   } catch (error) {
     return {
@@ -223,6 +412,52 @@ async function deepRepairDisc(devicePath, password) {
       error: error.message
     };
   }
+}
+
+function runCommandWithPassword(cmd, password, timeoutMs = 30 * 60 * 1000) {
+  return new Promise((resolve, reject) => {
+    const args = cmd.split(' ');
+    const child = spawn('sudo', ['-S', ...args]);
+    
+    let stdout = '';
+    let stderr = '';
+    let timedOut = false;
+    
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      child.kill('SIGTERM');
+      reject({ stdout, stderr, code: 'TIMEOUT', message: `Comando cancelado por timeout después de ${timeoutMs/1000} segundos` });
+    }, timeoutMs);
+    
+    child.stdin.write(password + '\n');
+    child.stdin.end();
+    
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+    
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+    
+    child.on('close', (code) => {
+      clearTimeout(timeout);
+      if (!timedOut) {
+        if (code === 0) {
+          resolve({ stdout, stderr });
+        } else {
+          reject({ stdout, stderr, code, message: `Comando falló con código ${code}` });
+        }
+      }
+    });
+    
+    child.on('error', (err) => {
+      clearTimeout(timeout);
+      if (!timedOut) {
+        reject({ stdout, stderr: err.message, code: 'ERROR' });
+      }
+    });
+  });
 }
 
 module.exports = {

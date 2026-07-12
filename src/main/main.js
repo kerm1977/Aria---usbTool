@@ -65,12 +65,11 @@ function createWindow() {
       sandbox: true
     },
     backgroundColor: '#0f0f1a',
-    show: false
+    show: true
   });
 
   mainWindow.loadFile(path.join(__dirname, '../../index.html'));
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
     // Iniciar monitoreo de discos cuando la ventana esté lista
     startDiscMonitoring();
   });
@@ -78,11 +77,15 @@ function createWindow() {
     mainWindow = null;
     stopDiscMonitoring();
   });
+  
+  // Open DevTools for debugging
+  mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(() => {
   require('./ipc-handlers');
   require('./ipc-handlers-extended');
+  // require('./performance-handler'); // Temporalmente desactivado para abrir la app
   createWindow();
 });
 app.on('window-all-closed', () => {

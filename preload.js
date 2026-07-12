@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('usbAPI', {
   onDiscsChanged: (callback) => ipcRenderer.on('discs-changed', (event, data) => callback(data)),
+  onRepairProgress: (callback) => ipcRenderer.on('repair-progress', (event, data) => callback(data)),
   listDevices: () => ipcRenderer.invoke('list-usb-devices'),
   killProcesses: (mountpoint) => ipcRenderer.invoke('kill-processes', mountpoint),
   ejectDevice: (partition, mountpoint) => ipcRenderer.invoke('eject-device', partition, mountpoint),
@@ -23,5 +24,11 @@ contextBridge.exposeInMainWorld('usbAPI', {
   getDiskSpace: (mountpoint) => ipcRenderer.invoke('get-disk-space', mountpoint),
   scanDiscs: () => ipcRenderer.invoke('scan-discs'),
   scanDiscHealth: (devicePath) => ipcRenderer.invoke('scan-disc-health', devicePath),
-  deepRepairDisc: (devicePath, password) => ipcRenderer.invoke('deep-repair-disc', devicePath, password)
+  deepRepairDisc: (devicePath, password, forceBadblocks = false) => ipcRenderer.invoke('deep-repair-disc', devicePath, password, forceBadblocks),
+  // Funciones de addon nativo para alto rendimiento
+  performanceCalculateSync: (data) => ipcRenderer.invoke('performance-calculate-sync', data),
+  performanceCalculateAsync: (data) => ipcRenderer.invoke('performance-calculate-async', data),
+  performanceAnalyzeDisk: (diskSizeGB) => ipcRenderer.invoke('performance-analyze-disk', diskSizeGB),
+  performanceProcessBatches: (batches, useAsync = true) => ipcRenderer.invoke('performance-process-batches', batches, useAsync),
+  performanceAnalyzeIntegrity: (data) => ipcRenderer.invoke('performance-analyze-integrity', data)
 });

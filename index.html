@@ -477,6 +477,16 @@
               ESCANEAR DISCOS
             </button>
           </div>
+          <div class="form-row">
+            <label for="discSudoPassword">Contraseña sudo (para reparación profunda):</label>
+            <input type="password" id="discSudoPassword" placeholder="Contraseña de sudo" />
+          </div>
+          <div class="form-row">
+            <label>
+              <input type="checkbox" id="forceBadblocks" />
+              Forzar solo badblocks (omitir desmontar/fsck)
+            </label>
+          </div>
           <div class="discos-list" id="discosList"></div>
         </div>
         <section class="glass-card log-card">

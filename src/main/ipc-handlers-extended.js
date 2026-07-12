@@ -46,8 +46,8 @@ ipcMain.handle('scan-disc-health', async (event, devicePath) => {
   return await scanDiscHealth(devicePath);
 });
 
-ipcMain.handle('deep-repair-disc', async (event, devicePath, password) => {
-  return await deepRepairDisc(devicePath, password);
+ipcMain.handle('deep-repair-disc', async (event, devicePath, password, forceBadblocks = false) => {
+  return await deepRepairDisc(devicePath, password, event, forceBadblocks);
 });
 
 ipcMain.handle('cancel-operations', async () => {
